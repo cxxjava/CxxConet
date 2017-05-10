@@ -1,0 +1,14 @@
+/*
+ * NHttpRequest.cpp
+ *
+ *  Created on: 2017-4-21
+ *      Author: cxxjava@163.com
+ */
+
+#include "NHttpRequest.hh"
+
+namespace efc {
+namespace naf {
+
+} /* namespace naf */
+} /* namespace efc */
