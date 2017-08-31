@@ -1,38 +1,38 @@
 /*
- * NHttpCodecFilter.cpp
+ * EHttpCodecFilter.cpp
  *
  *  Created on: 2017-4-7
  *      Author: cxxjava@163.com
  */
 
-#include "NHttpCodecFilter.hh"
-#include "NHttpRequest.hh"
-#include "NHttpResponse.hh"
+#include "./EHttpCodecFilter.hh"
+#include "./EHttpRequest.hh"
+#include "./EHttpResponse.hh"
 
 namespace efc {
 namespace naf {
 
 static const char* SESSION_CACHE_DATA = "session_cache_data";
 
-boolean NHttpCodecFilter::sessionCreated(NIoFilter::NextFilter* nextFilter,
-		NIoSession* session) {
+boolean EHttpCodecFilter::sessionCreated(EIoFilter::NextFilter* nextFilter,
+		EIoSession* session) {
 	return nextFilter->sessionCreated(session);
 }
 
-void NHttpCodecFilter::sessionClosed(NIoFilter::NextFilter* nextFilter,
-		NIoSession* session) {
+void EHttpCodecFilter::sessionClosed(EIoFilter::NextFilter* nextFilter,
+		EIoSession* session) {
 	nextFilter->sessionClosed(session);
 }
 
-sp<EObject> NHttpCodecFilter::messageReceived(NIoFilter::NextFilter* nextFilter,
-		NIoSession* session, sp<EObject> message) {
+sp<EObject> EHttpCodecFilter::messageReceived(EIoFilter::NextFilter* nextFilter,
+		EIoSession* session, sp<EObject> message) {
 
-	sp<NIoBuffer> buf = dynamic_pointer_cast<NIoBuffer>(message);
+	sp<EIoBuffer> buf = dynamic_pointer_cast<EIoBuffer>(message);
 
 	llong key = (llong)SESSION_CACHE_DATA;
 	sp<EByteBuffer> cache = dynamic_pointer_cast<EByteBuffer>(session->attributes.get(key));
 
-	if (buf == null && cache == null) {
+	if (buf == null && (cache == null || cache->size() == 0)) {
 		return nextFilter->messageReceived(session, null);
 	}
 
@@ -49,7 +49,7 @@ sp<EObject> NHttpCodecFilter::messageReceived(NIoFilter::NextFilter* nextFilter,
 		}
 	}
 
-	sp<NHttpRequest> out;
+	sp<EHttpRequest> out;
 
 	int hlen, blen, httplen;
 	httplen = hlen = blen = 0;
@@ -71,7 +71,7 @@ sp<EObject> NHttpCodecFilter::messageReceived(NIoFilter::NextFilter* nextFilter,
 		}
 
 		if (cache->size() >= httplen) {
-			out = new NHttpRequest((const char*)cache->data(), hlen, blen);
+			out = new EHttpRequest(cache->data(), hlen, blen);
 			cache->erase(0, httplen);
 		}
 	}
@@ -79,11 +79,11 @@ sp<EObject> NHttpCodecFilter::messageReceived(NIoFilter::NextFilter* nextFilter,
 	return nextFilter->messageReceived(session, out);
 }
 
-sp<EObject> NHttpCodecFilter::messageSend(NIoFilter::NextFilter* nextFilter,
-		NIoSession* session, sp<EObject> message) {
-	sp<NHttpResponse> response = dynamic_pointer_cast<NHttpResponse>(message);
+sp<EObject> EHttpCodecFilter::messageSend(EIoFilter::NextFilter* nextFilter,
+		EIoSession* session, sp<EObject> message) {
+	sp<EHttpResponse> response = dynamic_pointer_cast<EHttpResponse>(message);
 	if (response != null) {
-		sp<NIoBuffer> out = NIoBuffer::allocate(response->getHttpDataLen());
+		sp<EIoBuffer> out = EIoBuffer::allocate(response->getHttpDataLen());
 		out->put(response->getHttpData(), response->getHttpDataLen());
 		out->flip();
 		message = out;
@@ -91,8 +91,8 @@ sp<EObject> NHttpCodecFilter::messageSend(NIoFilter::NextFilter* nextFilter,
 	return nextFilter->messageSend(session, message);
 }
 
-EStringBase NHttpCodecFilter::toString() {
-	return "NHttpCodecFilter";
+EStringBase EHttpCodecFilter::toString() {
+	return "EHttpCodecFilter";
 }
 
 } /* namespace naf */

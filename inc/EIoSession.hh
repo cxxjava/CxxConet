@@ -1,20 +1,20 @@
 /*
- * NIoSession.hh
+ * EIoSession.hh
  *
  *  Created on: 2013-8-19
  *      Author: cxxjava@163.com
  */
 
-#ifndef NIOSESSION_HH_
-#define NIOSESSION_HH_
+#ifndef EIOSESSION_HH_
+#define EIOSESSION_HH_
 
 #include "Efc.hh"
 
 namespace efc {
 namespace naf {
 
-class NIoService;
-class NIoFilterChain;
+class EIoService;
+class EIoFilterChain;
 
 /**
  * A handle which represents connection between two end-points regardless of
@@ -31,9 +31,9 @@ class NIoFilterChain;
  * </p>
  * <p/>
  */
-abstract class NIoSession: virtual public EObject {
+abstract class EIoSession: virtual public EObject {
 public:
-	virtual ~NIoSession();
+	virtual ~EIoSession();
 
 	/**
 	 * @return a unique identifier for this session.  Every session has its own
@@ -44,12 +44,12 @@ public:
 	/**
 	 * @return the {@link IoService} which provides I/O service to this session.
 	 */
-	virtual NIoService* getService();
+	virtual EIoService* getService();
 
 	/**
 	 * @return the filter chain that only affects this session.
 	 */
-	virtual NIoFilterChain* getFilterChain();
+	virtual EIoFilterChain* getFilterChain();
 
 	/**
 	 * @return a {@link ReadFuture} which is notified when a new message is
@@ -131,8 +131,14 @@ public:
 public:
 	EHashMap<llong, sp<EObject> > attributes;
 
+	/**
+	 *
+	 */
+	void* attach(void* ob);
+	void* attachment();
+
 protected:
-	friend class NIoFilterChain;
+	friend class EIoFilterChain;
 
 	/** The session ID */
 	long sessionId;
@@ -146,10 +152,12 @@ protected:
 	long readMessages;
 	long writtenMessages;
 
-	NIoService* service;
+	EIoService* service;
+
+	EAtomicReference<void> attachment_;
 
 	/** The FilterChain created for this session */
-	NIoFilterChain* filterChain;
+	EIoFilterChain* filterChain;
 
 	/** An id generator guaranteed to generate unique IDs for the session */
 	static long idGenerator;
@@ -159,7 +167,7 @@ protected:
 	 *
 	 * @param service the Service for this session
 	 */
-	NIoSession(NIoService* service);
+	EIoSession(EIoService* service);
 
 	/**
 	 * Increase the number of read bytes
@@ -195,4 +203,4 @@ protected:
 } /* namespace naf */
 } /* namespace efc */
 
-#endif /* NIOSESSION_HH_ */
+#endif /* EIOSESSION_HH_ */

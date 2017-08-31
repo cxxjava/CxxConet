@@ -1,5 +1,5 @@
 /*
- * NIoFilterChain.hh
+ * EIoFilterChain.hh
  *
  *  Created on: 2017-3-16
  *      Author: cxxjava@163.com
@@ -8,8 +8,7 @@
 #ifndef NFILTERCHAIN_HH_
 #define NFILTERCHAIN_HH_
 
-#include "NIoFilter.hh"
-#include "Efc.hh"
+#include "./EIoFilter.hh"
 
 namespace efc {
 namespace naf {
@@ -21,7 +20,7 @@ namespace naf {
  *
  */
 
-class NIoFilterChain: public EObject {
+class EIoFilterChain: public EObject {
 public:
 	/**
 	 * Represents a name-filter pair that an {@link IoFilterChain} contains.
@@ -37,12 +36,12 @@ public:
 		/**
 		 * @return the filter.
 		 */
-		virtual NIoFilter* getFilter() = 0;
+		virtual EIoFilter* getFilter() = 0;
 
 		/**
 		 * @return The {@link NextFilter} of the filter.
 		 */
-		virtual NIoFilter::NextFilter* getNextFilter() = 0;
+		virtual EIoFilter::NextFilter* getNextFilter() = 0;
 
 		/**
 		 * Adds the specified filter with the specified name just before this entry.
@@ -50,7 +49,7 @@ public:
 		 * @param name The Filter's name
 		 * @param filter The added Filter
 		 */
-		virtual void addBefore(const char* name, NIoFilter* filter) = 0;
+		virtual void addBefore(const char* name, EIoFilter* filter) = 0;
 
 		/**
 		 * Adds the specified filter with the specified name just after this entry.
@@ -58,7 +57,7 @@ public:
 		 * @param name The Filter's name
 		 * @param filter The added Filter
 		 */
-		virtual void addAfter(const char* name, NIoFilter* filter) = 0;
+		virtual void addAfter(const char* name, EIoFilter* filter) = 0;
 
 		/**
 		 * Removes this entry from the chain it belongs to.
@@ -67,17 +66,17 @@ public:
 	};
 
 public:
-	virtual ~NIoFilterChain();
+	virtual ~EIoFilterChain();
 
 	/**
 	 * Creates a new instance with an empty filter list.
 	 */
-	NIoFilterChain(NIoSession* session);
+	EIoFilterChain(EIoSession* session);
 
 	/**
 	 * Get the associated session
 	 */
-	NIoSession* getSession();
+	EIoSession* getSession();
 
 	/**
 	 * Returns the {@link Entry} with the specified <tt>name</tt> in this chain.
@@ -93,7 +92,7 @@ public:
 	 * @param filter The Filter we are looking for
 	 * @return The found Entry
 	 */
-	Entry* getEntry(NIoFilter* filter);
+	Entry* getEntry(EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#get(String)
@@ -101,7 +100,7 @@ public:
 	 * @param name The Filter's name we are looking for
 	 * @return The found Filter, or null
 	 */
-	NIoFilter* get(const char* name);
+	EIoFilter* get(const char* name);
 
 	/**
 	 * @see IoFilterChain#contains(String)
@@ -117,13 +116,13 @@ public:
 	 * @param filter The Filter we want to check if it's in the chain
 	 * @return <tt>true</tt> if the chain contains the given filter
 	 */
-	boolean contains(NIoFilter* filter);
+	boolean contains(EIoFilter* filter);
 
 	/**
 	 *
 	 */
-	NIoFilter::NextFilter* getNextFilter(const char* name);
-	NIoFilter::NextFilter* getNextFilter(NIoFilter* filter);
+	EIoFilter::NextFilter* getNextFilter(const char* name);
+	EIoFilter::NextFilter* getNextFilter(EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#addFirst(String, IoFilter)
@@ -131,7 +130,7 @@ public:
 	 * @param name The filter's name
 	 * @param filter The filter to add
 	 */
-	void addFirst(const char* name, NIoFilter* filter);
+	void addFirst(const char* name, EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#addLast(String, IoFilter)
@@ -139,7 +138,7 @@ public:
 	 * @param name The filter's name
 	 * @param filter The filter to add
 	 */
-	void addLast(const char* name, NIoFilter* filter);
+	void addLast(const char* name, EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#addBefore(String, String, IoFilter)
@@ -148,7 +147,7 @@ public:
 	 * @param name The filter's name
 	 * @param filter The filter to add
 	 */
-	void addBefore(const char* baseName, const char* name, NIoFilter* filter);
+	void addBefore(const char* baseName, const char* name, EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#addAfter(String, String, IoFilter)
@@ -157,7 +156,7 @@ public:
 	 * @param name The filter's name
 	 * @param filter The filter to add
 	 */
-	void addAfter(const char* baseName, const char* name, NIoFilter* filter);
+	void addAfter(const char* baseName, const char* name, EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#remove(String)
@@ -165,7 +164,7 @@ public:
 	 * @param name The Filter's name to remove from the list of Filters
 	 * @return The removed IoFilter
 	 */
-	NIoFilter* remove(const char* name);
+	EIoFilter* remove(const char* name);
 
 	/**
 	 * @see IoFilterChain#remove(IoFilter)
@@ -173,7 +172,7 @@ public:
 	 * @param filter The Filter we want to remove from the list of Filters
 	 * @return The removed IoFilter
 	 */
-	NIoFilter* remove(NIoFilter* filter);
+	EIoFilter* remove(EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#clear()
@@ -221,7 +220,7 @@ private:
 	class EntryImpl;
 
 	/** The associated session */
-	NIoSession* session;
+	EIoSession* session;
 
 	/** The mapping between the filters and their associated name */
 	//cxxjava: name2entry use HashMap at mina-2.0.0-RC1 and use ConcurrentHashMap at later versions.
@@ -243,7 +242,7 @@ private:
 	 * the next filter in the filter's chain. We also call the preAdd and
 	 * postAdd methods.
 	 */
-	void register_(EntryImpl* prevEntry, const char* name, NIoFilter* filter);
+	void register_(EntryImpl* prevEntry, const char* name, EIoFilter* filter);
 
 	void deregister(EntryImpl* entry);
 
@@ -254,10 +253,10 @@ private:
 	 */
 	EntryImpl* checkOldName(const char* baseName);
 
-	boolean callNextSessionCreated(Entry* entry, NIoSession* session);
-	void callNextSessionClosed(Entry* entry, NIoSession* session);
-	sp<EObject> callNextMessageReceived(Entry* entry, NIoSession* session, sp<EObject> message);
-	sp<EObject> callNextMessageSend(Entry* entry, NIoSession* session, sp<EObject> message);
+	boolean callNextSessionCreated(Entry* entry, EIoSession* session);
+	void callNextSessionClosed(Entry* entry, EIoSession* session);
+	sp<EObject> callNextMessageReceived(Entry* entry, EIoSession* session, sp<EObject> message);
+	sp<EObject> callNextMessageSend(Entry* entry, EIoSession* session, sp<EObject> message);
 };
 
 } /* namespace naf */

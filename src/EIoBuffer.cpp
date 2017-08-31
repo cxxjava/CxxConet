@@ -1,123 +1,123 @@
 /*
- * NIoBuffer.cpp
+ * EIoBuffer.cpp
  *
  *  Created on: 2016-1-11
  *      Author: cxxjava@163.com
  */
 
-#include "NIoBuffer.hh"
+#include "../inc/EIoBuffer.hh"
 
 namespace efc {
 namespace naf {
 
-NIoBuffer::~NIoBuffer() {
+EIoBuffer::~EIoBuffer() {
 	if (derived_) {
 		delete buf_;
 	}
 }
 
-NIoBuffer::NIoBuffer(int capacity) :
+EIoBuffer::EIoBuffer(int capacity) :
 		derived_(true), autoExpand_(false), autoShrink_(false), recapacityAllowed_(
 				true) {
 	buf_ = EIOByteBuffer::allocate(capacity);
 	minimumCapacity_ = capacity;
 }
 
-NIoBuffer::NIoBuffer(EIOByteBuffer* newbuf, int minimumCapacity) :
+EIoBuffer::EIoBuffer(EIOByteBuffer* newbuf, int minimumCapacity) :
 		derived_(true), autoExpand_(false), autoShrink_(false), recapacityAllowed_(
 				false) {
 	buf_ = newbuf;
 	minimumCapacity_ = minimumCapacity;
 }
 
-NIoBuffer* NIoBuffer::allocate(int capacity) {
-	return new NIoBuffer(capacity);
+EIoBuffer* EIoBuffer::allocate(int capacity) {
+	return new EIoBuffer(capacity);
 }
 
-NIoBuffer* NIoBuffer::wrap(void* address, int capacity, int offset) {
+EIoBuffer* EIoBuffer::wrap(void* address, int capacity, int offset) {
 	EIOByteBuffer* buf = EIOByteBuffer::wrap(address, capacity, offset);
-	return new NIoBuffer(buf, capacity);
+	return new EIoBuffer(buf, capacity);
 }
 
-NIoBuffer* NIoBuffer::duplicate() {
+EIoBuffer* EIoBuffer::duplicate() {
 	recapacityAllowed_ = false;
-	return new NIoBuffer(buf_->duplicate(), buf_->capacity());
+	return new EIoBuffer(buf_->duplicate(), buf_->capacity());
 }
 
-NIoBuffer* NIoBuffer::slice() {
+EIoBuffer* EIoBuffer::slice() {
 	recapacityAllowed_ = false;
-	return new NIoBuffer(buf_->slice(), buf_->capacity());
+	return new EIoBuffer(buf_->slice(), buf_->capacity());
 }
 
-void NIoBuffer::free() {
+void EIoBuffer::free() {
 	// Do nothing
 }
 
-EIOByteBuffer* NIoBuffer::buf() {
+EIOByteBuffer* EIoBuffer::buf() {
 	return buf_;
 }
 
-boolean NIoBuffer::isDerived() {
+boolean EIoBuffer::isDerived() {
 	return derived_;
 }
 
-boolean NIoBuffer::isReadOnly() {
+boolean EIoBuffer::isReadOnly() {
 	return buf_->isReadOnly();
 }
 
-int NIoBuffer::remaining() {
+int EIoBuffer::remaining() {
 	return buf_->limit() - buf_->position();
 }
 
-boolean NIoBuffer::hasRemaining() {
+boolean EIoBuffer::hasRemaining() {
 	return buf_->limit() > buf_->position();
 }
 
-int NIoBuffer::position() {
+int EIoBuffer::position() {
 	return buf_->position();
 }
 
-NIoBuffer* NIoBuffer::position(int newPosition) {
+EIoBuffer* EIoBuffer::position(int newPosition) {
 	autoExpand(newPosition, 0);
 	buf_->position(newPosition);
 	return this;
 }
 
-int NIoBuffer::limit() {
+int EIoBuffer::limit() {
 	return buf_->limit();
 }
 
-NIoBuffer* NIoBuffer::limit(int newLimit) {
+EIoBuffer* EIoBuffer::limit(int newLimit) {
 	autoExpand(newLimit, 0);
 	buf_->limit(newLimit);
 	return this;
 }
 
-NIoBuffer* NIoBuffer::mark() {
+EIoBuffer* EIoBuffer::mark() {
 	buf_->mark();
 	return this;
 }
 
-NIoBuffer* NIoBuffer::flip() {
+EIoBuffer* EIoBuffer::flip() {
 	buf_->flip();
 	return this;
 }
 
-NIoBuffer* NIoBuffer::reset() {
+EIoBuffer* EIoBuffer::reset() {
 	buf_->reset();
 	return this;
 }
 
-NIoBuffer* NIoBuffer::clear() {
+EIoBuffer* EIoBuffer::clear() {
 	buf_->clear();
 	return this;
 }
 
-int NIoBuffer::minimumCapacity() {
+int EIoBuffer::minimumCapacity() {
 	return minimumCapacity_;
 }
 
-NIoBuffer* NIoBuffer::minimumCapacity(int minimumCapacity) {
+EIoBuffer* EIoBuffer::minimumCapacity(int minimumCapacity) {
 	if (minimumCapacity < 0) {
 		throw EIllegalArgumentException(__FILE__, __LINE__);
 	}
@@ -125,7 +125,7 @@ NIoBuffer* NIoBuffer::minimumCapacity(int minimumCapacity) {
 	return this;
 }
 
-int NIoBuffer::compareTo(NIoBuffer* that) {
+int EIoBuffer::compareTo(EIoBuffer* that) {
 	int n = this->position() + EMath::min(this->remaining(), that->remaining());
 	for (int i = this->position(), j = that->position(); i < n; i++, j++) {
 		byte v1 = buf_->get(i);
@@ -142,25 +142,25 @@ int NIoBuffer::compareTo(NIoBuffer* that) {
 	return this->remaining() - that->remaining();
 }
 
-NIoBuffer* NIoBuffer::autoExpand(int expectedRemaining) {
+EIoBuffer* EIoBuffer::autoExpand(int expectedRemaining) {
 	if (isAutoExpand()) {
 		expand(expectedRemaining, true);
 	}
 	return this;
 }
 
-NIoBuffer* NIoBuffer::autoExpand(int pos, int expectedRemaining) {
+EIoBuffer* EIoBuffer::autoExpand(int pos, int expectedRemaining) {
 	if (isAutoExpand()) {
 		expand(pos, expectedRemaining, true);
 	}
 	return this;
 }
 
-int NIoBuffer::capacity() {
+int EIoBuffer::capacity() {
 	return buf_->capacity();
 }
 
-NIoBuffer* NIoBuffer::capacity(int newCapacity) {
+EIoBuffer* EIoBuffer::capacity(int newCapacity) {
 	if (!recapacityAllowed_) {
 		throw EIllegalStateException(__FILE__, __LINE__, "Derived buffers and their parent can't be expanded.");
 	}
@@ -195,11 +195,11 @@ NIoBuffer* NIoBuffer::capacity(int newCapacity) {
 	return this;
 }
 
-boolean NIoBuffer::isAutoExpand() {
+boolean EIoBuffer::isAutoExpand() {
 	return autoExpand_ && recapacityAllowed_;
 }
 
-NIoBuffer* NIoBuffer::setAutoExpand(boolean autoExpand) {
+EIoBuffer* EIoBuffer::setAutoExpand(boolean autoExpand) {
 	if (!recapacityAllowed_) {
 		throw EIllegalStateException(__FILE__, __LINE__, "Derived buffers and their parent can't be expanded.");
 	}
@@ -207,11 +207,11 @@ NIoBuffer* NIoBuffer::setAutoExpand(boolean autoExpand) {
 	return this;
 }
 
-boolean NIoBuffer::isAutoShrink() {
+boolean EIoBuffer::isAutoShrink() {
 	return autoShrink_ && recapacityAllowed_;
 }
 
-NIoBuffer* NIoBuffer::setAutoShrink(boolean autoShrink) {
+EIoBuffer* EIoBuffer::setAutoShrink(boolean autoShrink) {
 	if (!recapacityAllowed_) {
 		throw EIllegalStateException(__FILE__, __LINE__, "Derived buffers and their parent can't be shrinked.");
 	}
@@ -219,15 +219,15 @@ NIoBuffer* NIoBuffer::setAutoShrink(boolean autoShrink) {
 	return this;
 }
 
-NIoBuffer* NIoBuffer::expand(int expectedRemaining) {
+EIoBuffer* EIoBuffer::expand(int expectedRemaining) {
 	return expand(position(), expectedRemaining, false);
 }
 
-NIoBuffer* NIoBuffer::expand(int pos, int expectedRemaining) {
+EIoBuffer* EIoBuffer::expand(int pos, int expectedRemaining) {
 	return expand(pos, expectedRemaining, false);
 }
 
-NIoBuffer* NIoBuffer::expand(int pos, int expectedRemaining, boolean autoExpand) {
+EIoBuffer* EIoBuffer::expand(int pos, int expectedRemaining, boolean autoExpand) {
 	if (!recapacityAllowed_) {
 		throw EIllegalStateException(__FILE__, __LINE__, "Derived buffers and their parent can't be expanded.");
 	}
@@ -236,7 +236,7 @@ NIoBuffer* NIoBuffer::expand(int pos, int expectedRemaining, boolean autoExpand)
 	int newCapacity;
 
 	if (autoExpand) {
-		newCapacity = NIoBuffer::normalizeCapacity(end);
+		newCapacity = EIoBuffer::normalizeCapacity(end);
 	} else {
 		newCapacity = end;
 	}
@@ -252,7 +252,7 @@ NIoBuffer* NIoBuffer::expand(int pos, int expectedRemaining, boolean autoExpand)
 	return this;
 }
 
-NIoBuffer* NIoBuffer::shrink() {
+EIoBuffer* EIoBuffer::shrink() {
 	if (!recapacityAllowed_) {
 		throw EIllegalStateException(__FILE__, __LINE__, "Derived buffers and their parent can't be expanded.");
 	}
@@ -307,43 +307,43 @@ NIoBuffer* NIoBuffer::shrink() {
 	return this;
 }
 
-int NIoBuffer::markValue() {
+int EIoBuffer::markValue() {
 	return buf_->markValue();
 }
 
-NIoBuffer* NIoBuffer::sweep() {
+EIoBuffer* EIoBuffer::sweep() {
 	clear();
 	return fillAndReset(0, remaining());
 }
 
-NIoBuffer* NIoBuffer::sweep(byte value) {
+EIoBuffer* EIoBuffer::sweep(byte value) {
 	clear();
 	return fillAndReset(value, remaining());
 }
 
-NIoBuffer* NIoBuffer::rewind() {
+EIoBuffer* EIoBuffer::rewind() {
 	buf_->rewind();
 	return this;
 }
 
-NIoBuffer* NIoBuffer::compact() {
+EIoBuffer* EIoBuffer::compact() {
 	buf_->compact();
 	return this;
 }
 
-NIoBuffer* NIoBuffer::skip(int size) {
+EIoBuffer* EIoBuffer::skip(int size) {
 	autoExpand(size);
 	return position(position() + size);
 }
 
-NIoBuffer* NIoBuffer::fill(byte value, int size) {
+EIoBuffer* EIoBuffer::fill(byte value, int size) {
 	autoExpand(size);
 	eso_memset((char*)buf_->current(), value, size);
 	position(position() + size);
 	return this;
 }
 
-int NIoBuffer::indexOf(byte b) {
+int EIoBuffer::indexOf(byte b) {
 	int beginPos = position();
 	int lim = limit();
 
@@ -356,7 +356,7 @@ int NIoBuffer::indexOf(byte b) {
 	return -1;
 }
 
-NIoBuffer* NIoBuffer::fillAndReset(byte value, int size) {
+EIoBuffer* EIoBuffer::fillAndReset(byte value, int size) {
 	autoExpand(size);
 	int pos = position();
 	ON_FINALLY_NOTHROW(
@@ -367,7 +367,7 @@ NIoBuffer* NIoBuffer::fillAndReset(byte value, int size) {
 	return this;
 }
 
-int NIoBuffer::normalizeCapacity(int requestedCapacity) {
+int EIoBuffer::normalizeCapacity(int requestedCapacity) {
 	if (requestedCapacity < 0) {
 		return EInteger::MAX_VALUE;
 	}
@@ -379,7 +379,7 @@ int NIoBuffer::normalizeCapacity(int requestedCapacity) {
 }
 
 
-EStringBase NIoBuffer::toString() {
+EStringBase EIoBuffer::toString() {
 	EStringBase buf("IoBuffer");
 	buf.append("[pos=");
 	buf.append(position());
@@ -397,15 +397,15 @@ EStringBase NIoBuffer::toString() {
 	return buf;
 }
 
-void* NIoBuffer::address() {
+void* EIoBuffer::address() {
 	return buf_->address();
 }
 
-void* NIoBuffer::current() {
+void* EIoBuffer::current() {
 	return buf_->current();
 }
 
-EString NIoBuffer::getHexdump(int lengthLimit) {
+EString EIoBuffer::getHexdump(int lengthLimit) {
 	int n = buf_->remaining();
 	char* hexs = eso_new_bytes2hexstr((es_uint8_t*)(buf_->current()), ES_MIN(lengthLimit, n));
 	EString s(hexs);
@@ -413,39 +413,39 @@ EString NIoBuffer::getHexdump(int lengthLimit) {
 	return s;
 }
 
-byte NIoBuffer::get() {
+byte EIoBuffer::get() {
 	return buf_->get();
 }
 
-NIoBuffer* NIoBuffer::put(byte b) {
+EIoBuffer* EIoBuffer::put(byte b) {
 	autoExpand(1);
 	buf_->put(b);
 	return this;
 }
 
-byte NIoBuffer::get(int index) {
+byte EIoBuffer::get(int index) {
 	return buf_->get(index);
 }
 
-NIoBuffer* NIoBuffer::put(int index, byte b) {
+EIoBuffer* EIoBuffer::put(int index, byte b) {
 	autoExpand(index, 1);
 	buf_->put(index, b);
 	return this;
 }
 
-NIoBuffer* NIoBuffer::get(void* dst, int size, int length) {
+EIoBuffer* EIoBuffer::get(void* dst, int size, int length) {
 	ES_ASSERT(dst);
 	buf_->get(dst, size, length);
 	return this;
 }
 
-NIoBuffer* NIoBuffer::get(EA<byte>* dst) {
+EIoBuffer* EIoBuffer::get(EA<byte>* dst) {
 	int size = dst->length() * sizeof(byte);
 	buf_->get(dst->address(), size, size);
 	return this;
 }
 
-NIoBuffer* NIoBuffer::getSlice(int index, int length) {
+EIoBuffer* EIoBuffer::getSlice(int index, int length) {
 	if (length < 0) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, EString::formatOf("length: %d", length).c_str());
 	}
@@ -468,14 +468,14 @@ NIoBuffer* NIoBuffer::getSlice(int index, int length) {
 	limit(endIndex);
 	position(index);
 
-	NIoBuffer* newBuf = slice();
+	EIoBuffer* newBuf = slice();
 	limit(lim);
 	position(pos);
 
 	return newBuf;
 }
 
-NIoBuffer* NIoBuffer::getSlice(int length) {
+EIoBuffer* EIoBuffer::getSlice(int length) {
 	if (length < 0) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, EString::formatOf("length: %d", length).c_str());
 	}
@@ -488,96 +488,96 @@ NIoBuffer* NIoBuffer::getSlice(int length) {
 	}
 
 	limit(pos + length);
-	NIoBuffer* newBuf = slice();
+	EIoBuffer* newBuf = slice();
 	position(nextPos);
 	limit(lim);
 	return newBuf;
 }
 
-NIoBuffer* NIoBuffer::put(EIOByteBuffer* src) {
+EIoBuffer* EIoBuffer::put(EIOByteBuffer* src) {
 	autoExpand(src->remaining());
 	buf_->put(src);
 	return this;
 }
 
-NIoBuffer* NIoBuffer::put(NIoBuffer* src) {
+EIoBuffer* EIoBuffer::put(EIoBuffer* src) {
 	return put(src->buf());
 }
 
-NIoBuffer* NIoBuffer::put(const void* src, int length) {
+EIoBuffer* EIoBuffer::put(const void* src, int length) {
 	ES_ASSERT(src);
 	autoExpand(length);
 	buf_->put(src, length);
 	return this;
 }
 
-NIoBuffer* NIoBuffer::put(EA<byte>* src) {
+EIoBuffer* EIoBuffer::put(EA<byte>* src) {
 	int size = src->length() * sizeof(byte);
 	autoExpand(size);
 	buf_->put(src->address(), size);
 	return this;
 }
 
-char NIoBuffer::getChar() {
+char EIoBuffer::getChar() {
 	return (char) (buf_->get());
 }
 
-NIoBuffer* NIoBuffer::putChar(char value) {
+EIoBuffer* EIoBuffer::putChar(char value) {
 	autoExpand(1);
 	buf_->put(value);
 	return this;
 }
 
-char NIoBuffer::getChar(int index) {
+char EIoBuffer::getChar(int index) {
 	return (char) (buf_->get(index));
 }
 
-NIoBuffer* NIoBuffer::putChar(int index, char value) {
+EIoBuffer* EIoBuffer::putChar(int index, char value) {
 	autoExpand(index, 1);
 	buf_->put(index, value);
 	return this;
 }
 
-short NIoBuffer::getShort() {
+short EIoBuffer::getShort() {
 	short n = EStream::readShort(buf_->current());
 	buf_->skip(2);
 	return n;
 }
 
-NIoBuffer* NIoBuffer::putShort(short value) {
+EIoBuffer* EIoBuffer::putShort(short value) {
 	autoExpand(2);
 	EStream::writeShort(buf_->current(), value);
 	buf_->skip(2);
 	return this;
 }
 
-short NIoBuffer::getShort(int index) {
+short EIoBuffer::getShort(int index) {
 	byte s[2];
 	s[0] = buf_->get(index);
 	s[1] = buf_->get(index + 1);
 	return EStream::readShort(s);
 }
 
-NIoBuffer* NIoBuffer::putShort(int index, short value) {
+EIoBuffer* EIoBuffer::putShort(int index, short value) {
 	autoExpand(index, 2);
 	EStream::writeShort(((char*)buf_->current()) + index, value);
 	return this;
 }
 
-int NIoBuffer::getInt() {
+int EIoBuffer::getInt() {
 	int n = EStream::readInt(buf_->current());
 	buf_->skip(4);
 	return n;
 }
 
-NIoBuffer* NIoBuffer::putInt(int value) {
+EIoBuffer* EIoBuffer::putInt(int value) {
 	autoExpand(4);
 	EStream::writeInt(buf_->current(), value);
 	buf_->skip(4);
 	return this;
 }
 
-int NIoBuffer::getInt(int index) {
+int EIoBuffer::getInt(int index) {
 	byte s[4];
 	s[0] = buf_->get(index);
 	s[1] = buf_->get(index + 1);
@@ -586,26 +586,26 @@ int NIoBuffer::getInt(int index) {
 	return EStream::readInt(s);
 }
 
-NIoBuffer* NIoBuffer::putInt(int index, int value) {
+EIoBuffer* EIoBuffer::putInt(int index, int value) {
 	autoExpand(index, 4);
 	EStream::writeInt(((char*)buf_->current()) + index, value);
 	return this;
 }
 
-llong NIoBuffer::getLLong() {
+llong EIoBuffer::getLLong() {
 	llong n = EStream::readLLong(buf_->current());
 	buf_->skip(8);
 	return n;
 }
 
-NIoBuffer* NIoBuffer::putLLong(llong value) {
+EIoBuffer* EIoBuffer::putLLong(llong value) {
 	autoExpand(8);
 	EStream::writeLLong(buf_->current(), value);
 	buf_->skip(8);
 	return this;
 }
 
-llong NIoBuffer::getLLong(int index) {
+llong EIoBuffer::getLLong(int index) {
 	byte s[8];
 	s[0] = buf_->get(index);
 	s[1] = buf_->get(index + 1);
@@ -618,57 +618,57 @@ llong NIoBuffer::getLLong(int index) {
 	return EStream::readLLong(s);
 }
 
-NIoBuffer* NIoBuffer::putLLong(int index, llong value) {
+EIoBuffer* EIoBuffer::putLLong(int index, llong value) {
 	autoExpand(index, 8);
 	EStream::writeLLong(((char*)buf_->current()) + index, value);
 	return this;
 }
 
-float NIoBuffer::getFloat() {
+float EIoBuffer::getFloat() {
 	int n = getInt();
 	return eso_intBits2float(n);
 }
 
-NIoBuffer* NIoBuffer::putFloat(float value) {
+EIoBuffer* EIoBuffer::putFloat(float value) {
 	autoExpand(4);
 	int n = eso_float2intBits(value);
 	return putInt(n);
 }
 
-float NIoBuffer::getFloat(int index) {
+float EIoBuffer::getFloat(int index) {
 	int n = getInt(index);
 	return eso_intBits2float(n);
 }
 
-NIoBuffer* NIoBuffer::putFloat(int index, float value) {
+EIoBuffer* EIoBuffer::putFloat(int index, float value) {
 	autoExpand(index, 4);
 	int n = eso_float2intBits(value);
 	return putInt(index, n);
 }
 
-double NIoBuffer::getDouble() {
+double EIoBuffer::getDouble() {
 	llong n = getLLong();
 	return eso_llongBits2double(n);
 }
 
-NIoBuffer* NIoBuffer::putDouble(double value) {
+EIoBuffer* EIoBuffer::putDouble(double value) {
 	autoExpand(8);
 	llong n = eso_double2llongBits(value);
 	return putLLong(n);
 }
 
-double NIoBuffer::getDouble(int index) {
+double EIoBuffer::getDouble(int index) {
 	llong n = getLLong(index);
 	return eso_llongBits2double(n);
 }
 
-NIoBuffer* NIoBuffer::putDouble(int index, double value) {
+EIoBuffer* EIoBuffer::putDouble(int index, double value) {
 	autoExpand(index, 8);
 	llong n = eso_double2llongBits(value);
 	return putLLong(index, n);
 }
 
-EString NIoBuffer::getString() {
+EString EIoBuffer::getString() {
 	if (!hasRemaining()) {
 		return "";
 	}
@@ -680,7 +680,7 @@ EString NIoBuffer::getString() {
 	return EString(str, 0, length);
 }
 
-EString NIoBuffer::getString(int fieldSize) {
+EString EIoBuffer::getString(int fieldSize) {
 	if (fieldSize == 0) {
 		return "";
 	}
@@ -696,7 +696,7 @@ EString NIoBuffer::getString(int fieldSize) {
 	return EString(str, 0, length);
 }
 
-NIoBuffer* NIoBuffer::putString(const char* val) {
+EIoBuffer* EIoBuffer::putString(const char* val) {
 	if (!val) {
 		return this;
 	}
@@ -708,7 +708,7 @@ NIoBuffer* NIoBuffer::putString(const char* val) {
 	return this;
 }
 
-NIoBuffer* NIoBuffer::putString(const char* val, int fieldSize) {
+EIoBuffer* EIoBuffer::putString(const char* val, int fieldSize) {
 	if (!val || fieldSize <= 0) {
 		return this;
 	}
@@ -721,12 +721,12 @@ NIoBuffer* NIoBuffer::putString(const char* val, int fieldSize) {
 	return this;
 }
 
-EInputStream* NIoBuffer::asInputStream() {
+EInputStream* EIoBuffer::asInputStream() {
 	class InputStream: public EInputStream {
 	private:
-		NIoBuffer* owner;
+		EIoBuffer* owner;
 	public:
-		InputStream(NIoBuffer* o): owner(o) {
+		InputStream(EIoBuffer* o): owner(o) {
 		}
 		virtual long available() {
             return owner->remaining();
@@ -762,12 +762,12 @@ EInputStream* NIoBuffer::asInputStream() {
 	return new InputStream(this);
 }
 
-EOutputStream* NIoBuffer::asOutputStream() {
+EOutputStream* EIoBuffer::asOutputStream() {
 	class OutputStream: public EOutputStream {
 	private:
-		NIoBuffer* owner;
+		EIoBuffer* owner;
 	public:
-		OutputStream(NIoBuffer* o): owner(o) {
+		OutputStream(EIoBuffer* o): owner(o) {
 		}
 		virtual void write(const void *b, int len) {
 			owner->put((void*)b, len);

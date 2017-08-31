@@ -1,11 +1,11 @@
 /*
- * NHttpResponse.cpp
+ * EHttpRequest.cpp
  *
  *  Created on: 2017-4-21
  *      Author: cxxjava@163.com
  */
 
-#include "NHttpResponse.hh"
+#include "./EHttpRequest.hh"
 
 namespace efc {
 namespace naf {

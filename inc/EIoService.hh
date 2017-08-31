@@ -1,19 +1,19 @@
 /*
- * NIoService.hh
+ * EIoService.hh
  *
  *  Created on: 2017-3-19
  *      Author: cxxjava@163.com
  */
 
-#ifndef NIOSERVICE_HH_
-#define NIOSERVICE_HH_
+#ifndef EIOSERVICE_HH_
+#define EIOSERVICE_HH_
 
 #include "Efc.hh"
 #include "Eco.hh"
 #include "ELog.hh"
 
-#include "NIoServiceStatistics.hh"
-#include "NIoFilterChainBuilder.hh"
+#include "./EIoServiceStatistics.hh"
+#include "./EIoFilterChainBuilder.hh"
 
 namespace efc {
 namespace naf {
@@ -24,8 +24,8 @@ namespace naf {
  *
  */
 
-interface NIoService : virtual public EObject {
-	virtual ~NIoService() {
+interface EIoService : virtual public EObject {
+	virtual ~EIoService() {
 	}
 
 	/**
@@ -46,14 +46,14 @@ interface NIoService : virtual public EObject {
 	 * by this service.
 	 * The default value is an empty {@link DefaultIoFilterChainBuilder}.
 	 */
-	virtual NIoFilterChainBuilder* getFilterChainBuilder() = 0;
+	virtual EIoFilterChainBuilder* getFilterChainBuilder() = 0;
 
 	/**
 	 * Returns the IoServiceStatistics object for this service.
 	 *
 	 * @return The statistics object for this service.
 	 */
-	virtual NIoServiceStatistics* getStatistics() = 0;
+	virtual EIoServiceStatistics* getStatistics() = 0;
 
 	/**
 	 * Releases any resources allocated by this service.  Please note that
@@ -72,4 +72,4 @@ interface NIoService : virtual public EObject {
 } // namespace naf
 } // namespace efc
 
-#endif /* NIOSERVICE_HH_ */
+#endif /* EIOSERVICE_HH_ */

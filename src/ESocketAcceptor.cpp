@@ -1,25 +1,25 @@
 /*
- * NSocketAcceptor.cpp
+ * ESocketAcceptor.cpp
  *
  *  Created on: 2017年3月16日
  *      Author: cxxjava@163.com
  */
 
-#include "NSocketAcceptor.hh"
-#include "NManagedSession.hh"
+#include "../inc/ESocketAcceptor.hh"
+#include "./EManagedSession.hh"
 
 namespace efc {
 namespace naf {
 
 #define SOCKET_BACKLOG_MIN 512
 
-sp<ELogger> NSocketAcceptor::logger = ELoggerManager::getLogger("NSocketAcceptor");
+sp<ELogger> ESocketAcceptor::logger = ELoggerManager::getLogger("ESocketAcceptor");
 
-NSocketAcceptor::~NSocketAcceptor() {
+ESocketAcceptor::~ESocketAcceptor() {
 	delete managedSessions_;
 }
 
-NSocketAcceptor::NSocketAcceptor() :
+ESocketAcceptor::ESocketAcceptor() :
 		disposing_(false),
 		reuseAddress_(false),
 		backlog_(SOCKET_BACKLOG_MIN),
@@ -28,10 +28,10 @@ NSocketAcceptor::NSocketAcceptor() :
 		maxConns_(-1),
 		workThreads_(EOS::active_processor_count()),
 		stats_(this) {
-	managedSessions_ = new NManagedSession(this);
+	managedSessions_ = new EManagedSession(this);
 }
 
-void NSocketAcceptor::setSSLParameters(const char* dh_file, const char* cert_file,
+void ESocketAcceptor::setSSLParameters(const char* dh_file, const char* cert_file,
 		const char* private_key_file, const char* passwd,
 		const char* CAfile) {
 	ssl_ = new SSL();
@@ -42,47 +42,47 @@ void NSocketAcceptor::setSSLParameters(const char* dh_file, const char* cert_fil
 	ssl_->CAfile = CAfile;
 }
 
-boolean NSocketAcceptor::isReuseAddress() {
+boolean ESocketAcceptor::isReuseAddress() {
 	return reuseAddress_;
 }
 
-void NSocketAcceptor::setReuseAddress(boolean on) {
+void ESocketAcceptor::setReuseAddress(boolean on) {
 	reuseAddress_ = on;
 }
 
-int NSocketAcceptor::getBacklog() {
+int ESocketAcceptor::getBacklog() {
 	return backlog_;
 }
 
-void NSocketAcceptor::setBacklog(int backlog) {
+void ESocketAcceptor::setBacklog(int backlog) {
 	backlog_ = ES_MAX(backlog, backlog_);
 }
 
-void NSocketAcceptor::setSoTimeout(int timeout) {
+void ESocketAcceptor::setSoTimeout(int timeout) {
 	timeout_ = timeout;
 }
 
-int NSocketAcceptor::getSoTimeout() {
+int ESocketAcceptor::getSoTimeout() {
 	return timeout_;
 }
 
-void NSocketAcceptor::setReceiveBufferSize (int size) {
+void ESocketAcceptor::setReceiveBufferSize (int size) {
 	bufsize_ = size;
 }
 
-int NSocketAcceptor::getReceiveBufferSize () {
+int ESocketAcceptor::getReceiveBufferSize () {
 	return bufsize_;
 }
 
-void NSocketAcceptor::setMaxConnections(int connections) {
+void ESocketAcceptor::setMaxConnections(int connections) {
 	maxConns_ = connections;
 }
 
-int NSocketAcceptor::getMaxConnections() {
+int ESocketAcceptor::getMaxConnections() {
 	return maxConns_.value();
 }
 
-void NSocketAcceptor::setSessionIdleTime(NIdleStatus status, int seconds) {
+void ESocketAcceptor::setSessionIdleTime(EIdleStatus status, int seconds) {
 	if (seconds < 0) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, EString::formatOf("Illegal idle time: %d", seconds).c_str());
 	}
@@ -95,7 +95,7 @@ void NSocketAcceptor::setSessionIdleTime(NIdleStatus status, int seconds) {
 	}
 }
 
-int NSocketAcceptor::getSessionIdleTime(NIdleStatus status) {
+int ESocketAcceptor::getSessionIdleTime(EIdleStatus status) {
 	if ((status & READER_IDLE) == READER_IDLE) {
 		return idleTimeForRead_.value();
 	}
@@ -105,56 +105,56 @@ int NSocketAcceptor::getSessionIdleTime(NIdleStatus status) {
 	throw EIllegalArgumentException(__FILE__, __LINE__, EString::formatOf("Unknown idle status: %d", status).c_str());
 }
 
-int NSocketAcceptor::getWorkThreads() {
+int ESocketAcceptor::getWorkThreads() {
 	return workThreads_;
 }
 
-int NSocketAcceptor::getManagedSessionCount() {
+int ESocketAcceptor::getManagedSessionCount() {
 	return managedSessions_->getManagedSessionCount();
 }
 
-NIoFilterChainBuilder* NSocketAcceptor::getFilterChainBuilder() {
+EIoFilterChainBuilder* ESocketAcceptor::getFilterChainBuilder() {
 	return &defaultFilterChain;
 }
 
-NIoServiceStatistics* NSocketAcceptor::getStatistics() {
+EIoServiceStatistics* ESocketAcceptor::getStatistics() {
 	return &stats_;
 }
 
-void NSocketAcceptor::setListeningHandler(std::function<void(NSocketAcceptor* acceptor)> handler) {
+void ESocketAcceptor::setListeningHandler(std::function<void(ESocketAcceptor* acceptor)> handler) {
 	listeningCallback_ = handler;
 }
 
-void NSocketAcceptor::setConnectionHandler(std::function<void(NSocketSession* session)> handler) {
+void ESocketAcceptor::setConnectionHandler(std::function<void(ESocketSession* session, Service* service)> handler) {
 	connectionCallback_ = handler;
 }
 
-void NSocketAcceptor::bind(int port) {
-	boundAddresses_.add(new EInetSocketAddress("127.0.0.1", port));
+void ESocketAcceptor::bind(int port, boolean ssl, const char* name) {
+	Services_.add(new Service(name, ssl, "127.0.0.1", port));
 }
 
-void NSocketAcceptor::bind(const char* hostname, int port) {
-	boundAddresses_.add(new EInetSocketAddress(hostname, port));
+void ESocketAcceptor::bind(const char* hostname, int port, boolean ssl, const char* name) {
+	Services_.add(new Service(name, ssl, hostname, port));
 }
 
-void NSocketAcceptor::bind(EInetSocketAddress* localAddress) {
+void ESocketAcceptor::bind(EInetSocketAddress* localAddress, boolean ssl, const char* name) {
 	if (!localAddress) {
 		throw ENullPointerException(__FILE__, __LINE__, "localAddress");
 	}
-	boundAddresses_.add(new EInetSocketAddress(*localAddress));
+	Services_.add(new Service(name, ssl, localAddress));
 }
 
-void NSocketAcceptor::bind(EIterable<EInetSocketAddress*>* localAddresses) {
+void ESocketAcceptor::bind(EIterable<EInetSocketAddress*>* localAddresses, boolean ssl, const char* name) {
 	if (!localAddresses) {
 		throw ENullPointerException(__FILE__, __LINE__, "localAddresses");
 	}
 	sp < EIterator<EInetSocketAddress*> > iter = localAddresses->iterator();
 	while (iter->hasNext()) {
-		boundAddresses_.add(new EInetSocketAddress(*iter->next()));
+		Services_.add(new Service(name, ssl, iter->next()));
 	}
 }
 
-void NSocketAcceptor::listen() {
+void ESocketAcceptor::listen() {
 	try {
 		EFiberScheduler scheduler;
 
@@ -177,10 +177,9 @@ void NSocketAcceptor::listen() {
 		}
 
 		// accept loop
-		sp<EIterator<EInetSocketAddress*> > iter = boundAddresses_.iterator();
+		sp<EIterator<Service*> > iter = Services_.iterator();
 		while (iter->hasNext()) {
-			EInetSocketAddress* isa = iter->next();
-			this->startAccept(scheduler, *isa);
+			this->startAccept(scheduler, iter->next());
 		}
 
 		// start statistics
@@ -201,20 +200,22 @@ void NSocketAcceptor::listen() {
 	}
 }
 
-void NSocketAcceptor::dispose() {
+void ESocketAcceptor::dispose() {
 	disposing_ = true;
 }
 
-boolean NSocketAcceptor::isDisposed() {
+boolean ESocketAcceptor::isDisposed() {
 	return disposing_;
 }
 
 //=============================================================================
 
-void NSocketAcceptor::startAccept(EFiberScheduler& scheduler, EInetSocketAddress& socketAddress) {
-	sp<EFiber> acceptFiber = scheduler.schedule([&,this](){
+void ESocketAcceptor::startAccept(EFiberScheduler& scheduler, Service* service) {
+	EInetSocketAddress& socketAddress = service->boundAddress;
+
+	sp<EFiber> acceptFiber = scheduler.schedule([&,service,this](){
 		sp<EServerSocket> ss;
-		if (ssl_ != null) {
+		if (ssl_ != null && service->sslActive) {
 			ESSLServerSocket* sss = new ESSLServerSocket();
 			boolean r = sss->setSSLParameters(ssl_->dh_file.c_str(),
 						ssl_->cert_file.c_str(),
@@ -243,7 +244,7 @@ void NSocketAcceptor::startAccept(EFiberScheduler& scheduler, EInetSocketAddress
 				sp<ESocket> socket = ss->accept();
 				if (socket != null) {
 					try {
-						sp<NSocketSession> session(new NSocketSession(this, socket));
+						sp<ESocketSession> session(new ESocketSession(this, socket));
 
 						// reach the max connections.
 						int maxconns = maxConns_.value();
@@ -260,7 +261,7 @@ void NSocketAcceptor::startAccept(EFiberScheduler& scheduler, EInetSocketAddress
 							stats_.largestManagedSessionCount.set(connections_.value());
 						}
 
-						scheduler.schedule([session,this](){
+						scheduler.schedule([session,service,this](){
 							ON_SCOPE_EXIT(
 								connections_--;
 
@@ -285,7 +286,7 @@ void NSocketAcceptor::startAccept(EFiberScheduler& scheduler, EInetSocketAddress
 
 							if (connectionCallback_ != null) {
 								try {
-									connectionCallback_(session.get());
+									connectionCallback_(session.get(), service);
 								} catch (EIOException& e) {
 									logger->error__(__FILE__, __LINE__, e.toString().c_str());
 								} catch (...) {
@@ -309,12 +310,12 @@ void NSocketAcceptor::startAccept(EFiberScheduler& scheduler, EInetSocketAddress
 	acceptFiber->setTag(0); //tag: 0
 }
 
-void NSocketAcceptor::startClean(EFiberScheduler& scheduler, int tag) {
+void ESocketAcceptor::startClean(EFiberScheduler& scheduler, int tag) {
 	sp<EFiber> leadFiber = scheduler.schedule([&,this](){
 		logger->debug__(__FILE__, __LINE__, "I'm clean fiber, thread id=%ld", EThread::currentThread()->getId());
 
 		try {
-			EHashMap<int, NIoSession*>* threadManagedSessions = managedSessions_->getCurrentThreadManagedSessions();
+			EHashMap<int, EIoSession*>* threadManagedSessions = managedSessions_->getCurrentThreadManagedSessions();
 
 			while (!disposing_) {
 				int maxsecs = EInteger::MAX_VALUE; // sleep for 1s-10s second.
@@ -334,9 +335,9 @@ void NSocketAcceptor::startClean(EFiberScheduler& scheduler, int tag) {
 				sleep(seconds); //!
 
 				llong currTime = ESystem::currentTimeMillis();
-				sp<EIterator<NIoSession*> > iter = threadManagedSessions->values()->iterator();
+				sp<EIterator<EIoSession*> > iter = threadManagedSessions->values()->iterator();
 				while (iter->hasNext()) {
-					NSocketSession* session = dynamic_cast<NSocketSession*>(iter->next());
+					ESocketSession* session = dynamic_cast<ESocketSession*>(iter->next());
 
 					llong lastIoTime = ELLong::MAX_VALUE;
 					if ((status & READER_IDLE) == READER_IDLE) {
@@ -359,7 +360,7 @@ void NSocketAcceptor::startClean(EFiberScheduler& scheduler, int tag) {
 	leadFiber->setTag(tag);  //tag: 1-N
 }
 
-void NSocketAcceptor::startStatistics(EFiberScheduler& scheduler) {
+void ESocketAcceptor::startStatistics(EFiberScheduler& scheduler) {
 	sp<EFiber> staticsticsFiber = scheduler.schedule([this](){
 		try {
 			llong currentTime = ESystem::currentTimeMillis();

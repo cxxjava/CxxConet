@@ -1,26 +1,26 @@
 /*
- * NIoFilterChainBuilder.cpp
+ * EIoFilterChainBuilder.cpp
  *
  *  Created on: 2017-3-16
  *      Author: cxxjava@163.com
  */
 
-#include "NIoFilterChainBuilder.hh"
+#include "../inc/EIoFilterChainBuilder.hh"
 
 namespace efc {
 namespace naf {
 
-class EntryImpl : public NIoFilterChain::Entry {
+class EntryImpl : public EIoFilterChain::Entry {
 public:
 	EString name;
-	NIoFilter* volatile filter;
-	NIoFilterChainBuilder* owner;
+	EIoFilter* volatile filter;
+	EIoFilterChainBuilder* owner;
 
 	virtual ~EntryImpl() {
 		//TODO...
 	}
 
-	EntryImpl(const char* name, NIoFilter* filter, NIoFilterChainBuilder* dicb) {
+	EntryImpl(const char* name, EIoFilter* filter, EIoFilterChainBuilder* dicb) {
 		if (name == null) {
 			throw EIllegalArgumentException(__FILE__, __LINE__, "name");
 		}
@@ -37,15 +37,15 @@ public:
 		return name.c_str();
 	}
 
-	NIoFilter* getFilter() {
+	EIoFilter* getFilter() {
 		return filter;
 	}
 
-	void setFilter(NIoFilter* filter) {
+	void setFilter(EIoFilter* filter) {
 		this->filter = filter;
 	}
 
-	NIoFilter::NextFilter* getNextFilter() {
+	EIoFilter::NextFilter* getNextFilter() {
 		throw EIllegalStateException(__FILE__, __LINE__);
 	}
 
@@ -53,11 +53,11 @@ public:
 		return EStringBase::formatOf("(%s:%s)", name.c_str(), filter->toString().c_str());
 	}
 
-	void addAfter(const char* name, NIoFilter* filter) {
+	void addAfter(const char* name, EIoFilter* filter) {
 		owner->addAfter(getName(), name, filter);
 	}
 
-	void addBefore(const char* name, NIoFilter* filter) {
+	void addBefore(const char* name, EIoFilter* filter) {
 		owner->addBefore(getName(), name, filter);
 	}
 
@@ -65,24 +65,24 @@ public:
 		owner->remove(getName());
 	}
 
-//	void replace(NIoFilter* newFilter) {
+//	void replace(EIoFilter* newFilter) {
 //		owner->replace(getName(), newFilter);
 //	}
 };
 
-NIoFilterChainBuilder::~NIoFilterChainBuilder() {
+EIoFilterChainBuilder::~EIoFilterChainBuilder() {
 
 }
 
-NIoFilterChainBuilder::NIoFilterChainBuilder() {
+EIoFilterChainBuilder::EIoFilterChainBuilder() {
 
 }
 
-NIoFilterChain::Entry* NIoFilterChainBuilder::getEntry(
+EIoFilterChain::Entry* EIoFilterChainBuilder::getEntry(
 		const char* name) {
-	sp<EConcurrentIterator<NIoFilterChain::Entry> > citer = entries.iterator();
+	sp<EConcurrentIterator<EIoFilterChain::Entry> > citer = entries.iterator();
 	while (citer->hasNext()) {
-		sp<NIoFilterChain::Entry> e = citer->next();
+		sp<EIoFilterChain::Entry> e = citer->next();
         EString n(e->getName());
 		if (n.equals(name)) {
 			return e.get();
@@ -92,11 +92,11 @@ NIoFilterChain::Entry* NIoFilterChainBuilder::getEntry(
 	return null;
 }
 
-NIoFilterChain::Entry* NIoFilterChainBuilder::getEntry(
-		NIoFilter* filter) {
-	sp<EConcurrentIterator<NIoFilterChain::Entry> > citer = entries.iterator();
+EIoFilterChain::Entry* EIoFilterChainBuilder::getEntry(
+		EIoFilter* filter) {
+	sp<EConcurrentIterator<EIoFilterChain::Entry> > citer = entries.iterator();
 	while (citer->hasNext()) {
-		sp<NIoFilterChain::Entry> e = citer->next();
+		sp<EIoFilterChain::Entry> e = citer->next();
 		if (e->getFilter() == filter) {
 			return e.get();
 		}
@@ -105,8 +105,8 @@ NIoFilterChain::Entry* NIoFilterChainBuilder::getEntry(
 	return null;
 }
 
-NIoFilter* NIoFilterChainBuilder::get(const char* name) {
-	sp<NIoFilterChain::Entry> e = getEntry(name);
+EIoFilter* EIoFilterChainBuilder::get(const char* name) {
+	sp<EIoFilterChain::Entry> e = getEntry(name);
 	if (e == null) {
 		return null;
 	}
@@ -114,28 +114,28 @@ NIoFilter* NIoFilterChainBuilder::get(const char* name) {
 	return e->getFilter();
 }
 
-boolean NIoFilterChainBuilder::contains(const char* name) {
+boolean EIoFilterChainBuilder::contains(const char* name) {
 	return getEntry(name) != null;
 }
 
-boolean NIoFilterChainBuilder::contains(NIoFilter* filter) {
+boolean EIoFilterChainBuilder::contains(EIoFilter* filter) {
 	return getEntry(filter) != null;
 }
 
-void NIoFilterChainBuilder::addFirst(const char* name, NIoFilter* filter) {
+void EIoFilterChainBuilder::addFirst(const char* name, EIoFilter* filter) {
 	register_(0, new EntryImpl(name, filter, this));
 }
 
-void NIoFilterChainBuilder::addLast(const char* name, NIoFilter* filter) {
+void EIoFilterChainBuilder::addLast(const char* name, EIoFilter* filter) {
 	register_(entries.size(), new EntryImpl(name, filter, this));
 }
 
-void NIoFilterChainBuilder::addBefore(const char* baseName, const char* name,
-		NIoFilter* filter) {
+void EIoFilterChainBuilder::addBefore(const char* baseName, const char* name,
+		EIoFilter* filter) {
 	checkBaseName(baseName);
 
-	for (sp<EConcurrentListIterator<NIoFilterChain::Entry> > i = entries.listIterator(); i->hasNext();) {
-		sp<NIoFilterChain::Entry> base = i->next();
+	for (sp<EConcurrentListIterator<EIoFilterChain::Entry> > i = entries.listIterator(); i->hasNext();) {
+		sp<EIoFilterChain::Entry> base = i->next();
 		if (strcmp(base->getName(), baseName) == 0) {
 			register_(i->previousIndex(), new EntryImpl(name, filter, this));
 			break;
@@ -143,12 +143,12 @@ void NIoFilterChainBuilder::addBefore(const char* baseName, const char* name,
 	}
 }
 
-void NIoFilterChainBuilder::addAfter(const char* baseName, const char* name,
-		NIoFilter* filter) {
+void EIoFilterChainBuilder::addAfter(const char* baseName, const char* name,
+		EIoFilter* filter) {
 	checkBaseName(baseName);
 
-	for (sp<EConcurrentListIterator<NIoFilterChain::Entry> > i = entries.listIterator(); i->hasNext();) {
-		sp<NIoFilterChain::Entry> base = i->next();
+	for (sp<EConcurrentListIterator<EIoFilterChain::Entry> > i = entries.listIterator(); i->hasNext();) {
+		sp<EIoFilterChain::Entry> base = i->next();
 		if (strcmp(base->getName(), baseName) == 0) {
 			register_(i->nextIndex(), new EntryImpl(name, filter, this));
 			break;
@@ -156,13 +156,13 @@ void NIoFilterChainBuilder::addAfter(const char* baseName, const char* name,
 	}
 }
 
-NIoFilter* NIoFilterChainBuilder::remove(const char* name) {
+EIoFilter* EIoFilterChainBuilder::remove(const char* name) {
 	if (name == null) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "name");
 	}
 
-	for (sp<EConcurrentListIterator<NIoFilterChain::Entry> > i = entries.listIterator(); i->hasNext();) {
-		sp<NIoFilterChain::Entry> e = i->next();
+	for (sp<EConcurrentListIterator<EIoFilterChain::Entry> > i = entries.listIterator(); i->hasNext();) {
+		sp<EIoFilterChain::Entry> e = i->next();
 		if (strcmp(e->getName(), name) == 0) {
 			entries.removeAt(i->previousIndex());
 			return e->getFilter();
@@ -174,13 +174,13 @@ NIoFilter* NIoFilterChainBuilder::remove(const char* name) {
 	throw EIllegalArgumentException(__FILE__, __LINE__, msg.c_str());
 }
 
-NIoFilter* NIoFilterChainBuilder::remove(NIoFilter* filter) {
+EIoFilter* EIoFilterChainBuilder::remove(EIoFilter* filter) {
 	if (filter == null) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "filter");
 	}
 
-	for (sp<EConcurrentListIterator<NIoFilterChain::Entry> > i = entries.listIterator(); i->hasNext();) {
-		sp<NIoFilterChain::Entry> e = i->next();
+	for (sp<EConcurrentListIterator<EIoFilterChain::Entry> > i = entries.listIterator(); i->hasNext();) {
+		sp<EIoFilterChain::Entry> e = i->next();
 		if (e->getFilter() == filter) {
 			entries.removeAt(i->previousIndex());
 			return e->getFilter();
@@ -192,26 +192,26 @@ NIoFilter* NIoFilterChainBuilder::remove(NIoFilter* filter) {
 	throw EIllegalArgumentException(__FILE__, __LINE__, msg.c_str());
 }
 
-void NIoFilterChainBuilder::clear() {
+void EIoFilterChainBuilder::clear() {
 	entries.clear();
 }
 
-void NIoFilterChainBuilder::buildFilterChain(NIoFilterChain* chain) {
-	sp<EConcurrentIterator<NIoFilterChain::Entry> > citer = entries.iterator();
+void EIoFilterChainBuilder::buildFilterChain(EIoFilterChain* chain) {
+	sp<EConcurrentIterator<EIoFilterChain::Entry> > citer = entries.iterator();
 	while (citer->hasNext()) {
-		sp<NIoFilterChain::Entry> e = citer->next();
+		sp<EIoFilterChain::Entry> e = citer->next();
 		chain->addLast(e->getName(), e->getFilter());
 	}
 }
 
-EStringBase NIoFilterChainBuilder::toString() {
+EStringBase EIoFilterChainBuilder::toString() {
 	EStringBase buf("{ ");
 
 	boolean empty = true;
 
-	sp<EConcurrentIterator<NIoFilterChain::Entry> > citer = entries.iterator();
+	sp<EConcurrentIterator<EIoFilterChain::Entry> > citer = entries.iterator();
 	while (citer->hasNext()) {
-		sp<NIoFilterChain::Entry> e = citer->next();
+		sp<EIoFilterChain::Entry> e = citer->next();
 		if (!empty) {
 			buf.append(", ");
 		} else {
@@ -234,7 +234,7 @@ EStringBase NIoFilterChainBuilder::toString() {
 	return buf;
 }
 
-void NIoFilterChainBuilder::register_(int index, NIoFilterChain::Entry* e) {
+void EIoFilterChainBuilder::register_(int index, EIoFilterChain::Entry* e) {
 	if (contains(e->getName())) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "Other filter is using the same name.");
 	}
@@ -242,7 +242,7 @@ void NIoFilterChainBuilder::register_(int index, NIoFilterChain::Entry* e) {
 	entries.addAt(index, e);
 }
 
-void NIoFilterChainBuilder::checkBaseName(const char* baseName) {
+void EIoFilterChainBuilder::checkBaseName(const char* baseName) {
 	if (baseName == null) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "baseName");
 	}

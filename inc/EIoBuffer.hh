@@ -1,12 +1,12 @@
 /*
- * NIoBuffer.hh
+ * EIoBuffer.hh
  *
  *  Created on: 2016-1-11
  *      Author: cxxjava@163.com
  */
 
-#ifndef NIOBUFFER_HH_
-#define NIOBUFFER_HH_
+#ifndef EIOBUFFER_HH_
+#define EIOBUFFER_HH_
 
 #include "Efc.hh"
 
@@ -112,9 +112,9 @@ namespace naf {
  *
  */
 
-class NIoBuffer: public EComparable<NIoBuffer*>, public ESynchronizeable {
+class EIoBuffer: public EComparable<EIoBuffer*>, public ESynchronizeable {
 public:
-	virtual ~NIoBuffer();
+	virtual ~EIoBuffer();
 
 	/**
 	 * Returns the direct or heap buffer which is capable to store the specified
@@ -125,7 +125,7 @@ public:
 	 *
 	 * @see #setUseDirectBuffer(boolean)
 	 */
-	static NIoBuffer* allocate(int capacity=512);
+	static EIoBuffer* allocate(int capacity=512);
 
 	/**
 	 * Wraps the specified byte array into enaf heap buffer. We just wrap the
@@ -138,21 +138,21 @@ public:
 	 * @param offset The starting point in the byte array
 	 * @return a heap IoBuffer containing the selected part of the byte array
 	 */
-	static NIoBuffer* wrap(void* address, int capacity, int offset=0);
+	static EIoBuffer* wrap(void* address, int capacity, int offset=0);
 
 	/**
 	 * @see ByteBuffer#duplicate()
 	 *
 	 * @return the modified IoBuffer
 	 */
-	virtual NIoBuffer* duplicate();
+	virtual EIoBuffer* duplicate();
 
 	/**
 	 * @see ByteBuffer#slice()
 	 *
 	 * @return the modified IoBuffer
 	 */
-	virtual NIoBuffer* slice();
+	virtual EIoBuffer* slice();
 
 	/**
 	 * Declares this buffer and all its derived buffers are not used anymore so
@@ -198,7 +198,7 @@ public:
 	 * @param minimumCapacity the wanted minimum capacity
 	 * @return the underlying NIO {@link ByteBuffer} instance.
 	 */
-	virtual NIoBuffer* minimumCapacity(int minimumCapacity);
+	virtual EIoBuffer* minimumCapacity(int minimumCapacity);
 
 	/**
 	 * @see ByteBuffer#capacity()
@@ -257,7 +257,7 @@ public:
 	 * @param newCapacity the wanted capacity
 	 * @return the underlying NIO {@link ByteBuffer} instance.
 	 */
-	virtual NIoBuffer* capacity(int newCapacity);
+	virtual EIoBuffer* capacity(int newCapacity);
 
 	/**
 	 * @return <tt>true</tt> if and only if <tt>autoExpand</tt> is turned on.
@@ -270,7 +270,7 @@ public:
 	 * @param autoExpand The flag value to set
 	 * @return The modified IoBuffer instance
 	 */
-	virtual NIoBuffer* setAutoExpand(boolean autoExpand);
+	virtual EIoBuffer* setAutoExpand(boolean autoExpand);
 
 	/**
 	 * @return <tt>true</tt> if and only if <tt>autoShrink</tt> is turned on.
@@ -283,7 +283,7 @@ public:
 	 * @param autoShrink The flag value to set
 	 * @return The modified IoBuffer instance
 	 */
-	virtual NIoBuffer* setAutoShrink(boolean autoShrink);
+	virtual EIoBuffer* setAutoShrink(boolean autoShrink);
 
 	/**
 	 * Changes the capacity and limit of this buffer so this buffer get the
@@ -352,7 +352,7 @@ public:
 	 * @param expectedRemaining The expected remaining bytes in the buffer
 	 * @return The modified IoBuffer instance
 	 */
-	virtual NIoBuffer* expand(int expectedRemaining);
+	virtual EIoBuffer* expand(int expectedRemaining);
 
 	/**
 	 * Changes the capacity and limit of this buffer so this buffer get the
@@ -423,7 +423,7 @@ public:
 	 * @param expectedRemaining The expected remaining bytes in the buffer
 	 * @return The modified IoBuffer instance
 	 */
-	virtual NIoBuffer* expand(int position, int expectedRemaining);
+	virtual EIoBuffer* expand(int position, int expectedRemaining);
 
 	/**
 	 * Changes the capacity of this buffer so this buffer occupies as less
@@ -470,7 +470,7 @@ public:
 	 *
 	 * @return The modified IoBuffer instance
 	 */
-	virtual NIoBuffer* shrink();
+	virtual EIoBuffer* shrink();
 
 	/**
 	 * @see java.nio.Buffer#position()
@@ -484,7 +484,7 @@ public:
 	 * @param newPosition Sets the new position in the buffer
 	 * @return the modified IoBuffer
 	 */
-	virtual NIoBuffer* position(int newPosition);
+	virtual EIoBuffer* position(int newPosition);
 
 	/**
 	 * @see java.nio.Buffer#limit()
@@ -499,14 +499,14 @@ public:
 	 * @param newLimit The new buffer's limit
 	 * @return the modified IoBuffer
 	 */
-	virtual NIoBuffer* limit(int newLimit);
+	virtual EIoBuffer* limit(int newLimit);
 
 	/**
 	 * @see java.nio.Buffer#mark()
 	 *
 	 * @return the modified IoBuffer
 	 */
-	virtual NIoBuffer* mark();
+	virtual EIoBuffer* mark();
 
 	/**
 	 * @return the position of the current mark. This method returns <tt>-1</tt>
@@ -519,14 +519,14 @@ public:
 	 *
 	 * @return the modified IoBuffer
 	 */
-	virtual NIoBuffer* reset();
+	virtual EIoBuffer* reset();
 
 	/**
 	 * @see java.nio.Buffer#clear()
 	 *
 	 * @return the modified IoBuffer
 	 */
-	virtual NIoBuffer* clear();
+	virtual EIoBuffer* clear();
 
 	/**
 	 * Clears this buffer and fills its content with <tt>NUL</tt>. The position
@@ -535,7 +535,7 @@ public:
 	 *
 	 * @return the modified IoBuffer
 	 */
-	virtual NIoBuffer* sweep();
+	virtual EIoBuffer* sweep();
 
 	/**
 	 * double Clears this buffer and fills its content with <tt>value</tt>. The
@@ -545,28 +545,28 @@ public:
 	 * @param value The value to put in the buffer
 	 * @return the modified IoBuffer
 	 */
-	virtual NIoBuffer* sweep(byte value);
+	virtual EIoBuffer* sweep(byte value);
 
 	/**
 	 * @see java.nio.Buffer#flip()
 	 *
 	 * @return the modified IoBuffer
 	 */
-	virtual NIoBuffer* flip();
+	virtual EIoBuffer* flip();
 
 	/**
 	 * @see java.nio.Buffer#rewind()
 	 *
 	 * @return the modified IoBuffer
 	 */
-	virtual NIoBuffer* rewind();
+	virtual EIoBuffer* rewind();
 
 	/**
 	 * @see ByteBuffer#compact()
 	 *
 	 * @return the modified IoBuffer
 	 */
-	virtual NIoBuffer* compact();
+	virtual EIoBuffer* compact();
 
 	/**
 	 * Forwards the position of this buffer as the specified <code>size</code>
@@ -575,7 +575,7 @@ public:
 	 * @param size The added size
 	 * @return The modified IoBuffer
 	 */
-	virtual NIoBuffer* skip(int size);
+	virtual EIoBuffer* skip(int size);
 
 	/**
 	 * Returns the first occurrence position of the specified byte from the
@@ -612,7 +612,7 @@ public:
 	/**
 	 * {@inheritDoc}
 	 */
-	virtual int compareTo(NIoBuffer* that);
+	virtual int compareTo(EIoBuffer* that);
 
 	/**
 	 * {@inheritDoc}
@@ -644,7 +644,7 @@ public:
      * @return the modified IoBuffer
 
      */
-	virtual NIoBuffer* put(byte b);
+	virtual EIoBuffer* put(byte b);
 
     /**
      * @see ByteBuffer#get(int)
@@ -662,7 +662,7 @@ public:
      * @return the modified IoBuffer
 
      */
-	virtual NIoBuffer* put(int index, byte b);
+	virtual EIoBuffer* put(int index, byte b);
 
     /**
      * @see ByteBuffer#get(byte[], int, int)
@@ -672,7 +672,7 @@ public:
      * @param length The number of bytes to copy
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* get(void* dst, int size, int length);
+	virtual EIoBuffer* get(void* dst, int size, int length);
 
     /**
      * @see ByteBuffer#get(byte[])
@@ -680,7 +680,7 @@ public:
      * @param dst The byte[] that will contain the read bytes
      * @return the IoBuffer
      */
-	virtual NIoBuffer* get(EA<byte>* dst);
+	virtual EIoBuffer* get(EA<byte>* dst);
 
     /**
      * Get a new IoBuffer containing a slice of the current buffer
@@ -689,7 +689,7 @@ public:
      * @param length The number of bytes to copy
      * @return the new IoBuffer
      */
-	virtual NIoBuffer* getSlice(int index, int length); //!
+	virtual EIoBuffer* getSlice(int index, int length); //!
 
     /**
      * Get a new IoBuffer containing a slice of the current buffer
@@ -697,7 +697,7 @@ public:
      * @param length The number of bytes to copy
      * @return the new IoBuffer
      */
-	virtual NIoBuffer* getSlice(int length); //!
+	virtual EIoBuffer* getSlice(int length); //!
 
     /**
      * Writes the content of the specified <tt>src</tt> into this buffer.
@@ -705,7 +705,7 @@ public:
      * @param src The source ByteBuffer
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* put(EIOByteBuffer* src);
+	virtual EIoBuffer* put(EIOByteBuffer* src);
 
     /**
      * Writes the content of the specified <tt>src</tt> into this buffer.
@@ -713,7 +713,7 @@ public:
      * @param src The source IoBuffer
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* put(NIoBuffer* src);
+	virtual EIoBuffer* put(EIoBuffer* src);
 
     /**
      * @see ByteBuffer#put(byte[], int, int)
@@ -722,7 +722,7 @@ public:
      * @param length The number of bytes to copy
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* put(const void* src, int length);
+	virtual EIoBuffer* put(const void* src, int length);
 
     /**
      * @see ByteBuffer#put(byte[])
@@ -730,7 +730,7 @@ public:
      * @param src The byte[] to put
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* put(EA<byte>* src);
+	virtual EIoBuffer* put(EA<byte>* src);
 
     /**
      * @see ByteBuffer#getChar()
@@ -745,7 +745,7 @@ public:
      * @param value The char to put at the current position
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* putChar(char value);
+	virtual EIoBuffer* putChar(char value);
 
     /**
      * @see ByteBuffer#getChar(int)
@@ -762,7 +762,7 @@ public:
      * @param value The char to put at the current position
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* putChar(int index, char value);
+	virtual EIoBuffer* putChar(int index, char value);
 
     /**
      * @see ByteBuffer#getShort()
@@ -777,7 +777,7 @@ public:
      * @param value The short to put at the current position
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* putShort(short value);
+	virtual EIoBuffer* putShort(short value);
 
     /**
      * @see ByteBuffer#getShort()
@@ -794,7 +794,7 @@ public:
      * @param value The short to put at the current position
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* putShort(int index, short value);
+	virtual EIoBuffer* putShort(int index, short value);
 
     /**
      * @see ByteBuffer#getInt()
@@ -809,7 +809,7 @@ public:
      * @param value The int to put at the current position
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* putInt(int value);
+	virtual EIoBuffer* putInt(int value);
 
     /**
      * @see ByteBuffer#getInt(int)
@@ -826,7 +826,7 @@ public:
      * @return the modified IoBuffer
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* putInt(int index, int value);
+	virtual EIoBuffer* putInt(int index, int value);
 
     /**
      * @see ByteBuffer#getLong()
@@ -841,7 +841,7 @@ public:
      * @param value The log to put in the IoBuffer
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* putLLong(llong value);
+	virtual EIoBuffer* putLLong(llong value);
 
     /**
      * @see ByteBuffer#getLong(int)
@@ -859,7 +859,7 @@ public:
      * @return the modified IoBuffer
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* putLLong(int index, llong value);
+	virtual EIoBuffer* putLLong(int index, llong value);
 
     /**
      * @see ByteBuffer#getFloat()
@@ -874,7 +874,7 @@ public:
      * @param value The float to put in the IoBuffer
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* putFloat(float value);
+	virtual EIoBuffer* putFloat(float value);
 
     /**
      * @see ByteBuffer#getFloat(int)
@@ -891,7 +891,7 @@ public:
      * @param value The float to put in the IoBuffer
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* putFloat(int index, float value);
+	virtual EIoBuffer* putFloat(int index, float value);
 
     /**
      * @see ByteBuffer#getDouble()
@@ -906,7 +906,7 @@ public:
      * @param value The double to put at the IoBuffer current position
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* putDouble(double value);
+	virtual EIoBuffer* putDouble(double value);
 
     /**
      * @see ByteBuffer#getDouble(int)
@@ -923,7 +923,7 @@ public:
      * @param value The double to put in the IoBuffer
      * @return the modified IoBuffer
      */
-	virtual NIoBuffer* putDouble(int index, double value);
+	virtual EIoBuffer* putDouble(int index, double value);
 
     // //////////////////////////////
     // String getters and putters //
@@ -959,7 +959,7 @@ public:
      * @return The modified IoBuffer
      * @throws CharacterCodingException When we have an error while decoding the String
      */
-	virtual NIoBuffer* putString(const char* val);
+	virtual EIoBuffer* putString(const char* val);
 
     /**
      * Writes the content of <code>in</code> into this buffer as a
@@ -978,7 +978,7 @@ public:
      * @return The modified IoBuffer
      * @throws CharacterCodingException When we have an error while decoding the String
      */
-	virtual NIoBuffer* putString(const char* val, int fieldSize);
+	virtual EIoBuffer* putString(const char* val, int fieldSize);
 
 	/**
 	 * Fills this buffer with the specified value. This method moves buffer
@@ -988,7 +988,7 @@ public:
 	 * @param size The added size
 	 * @return The modified IoBuffer
 	 */
-	virtual NIoBuffer* fill(byte value, int size);
+	virtual EIoBuffer* fill(byte value, int size);
 
 	/**
 	 * Fills this buffer with the specified value. This method does not change
@@ -998,7 +998,7 @@ public:
 	 * @param size The added size
 	 * @return The modified IoBuffer
 	 */
-	virtual NIoBuffer* fillAndReset(byte value, int size);
+	virtual EIoBuffer* fillAndReset(byte value, int size);
 
 public:
     /**
@@ -1049,29 +1049,29 @@ protected:
 	 * Creates a new instance. This is an empty constructor. It's protected,
 	 * to forbid its usage by the users.
 	 */
-	NIoBuffer() {
+	EIoBuffer() {
 		// Do nothing
 	}
 
-	NIoBuffer(int capacity);
-	NIoBuffer(EIOByteBuffer* newbuf, int minimumCapacity);
+	EIoBuffer(int capacity);
+	EIoBuffer(EIOByteBuffer* newbuf, int minimumCapacity);
 
 	/**
 	 * This method forwards the call to {@link #expand(int)} only when
 	 * <tt>autoExpand</tt> property is <tt>true</tt>.
 	 */
-	NIoBuffer* autoExpand(int expectedRemaining);
+	EIoBuffer* autoExpand(int expectedRemaining);
 
 	/**
 	 * This method forwards the call to {@link #expand(int)} only when
 	 * <tt>autoExpand</tt> property is <tt>true</tt>.
 	 */
-	NIoBuffer* autoExpand(int pos, int expectedRemaining);
+	EIoBuffer* autoExpand(int pos, int expectedRemaining);
 
 	/**
 	 *
 	 */
-	NIoBuffer* expand(int pos, int expectedRemaining, boolean autoExpand);
+	EIoBuffer* expand(int pos, int expectedRemaining, boolean autoExpand);
 
 	/**
 	 * Normalizes the specified capacity of the buffer to power of 2, which is
@@ -1087,4 +1087,4 @@ protected:
 
 } /* namespace naf */
 } /* namespace efc */
-#endif /* NIOBUFFER_HH_ */
+#endif /* EIOBUFFER_HH_ */

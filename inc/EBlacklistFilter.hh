@@ -1,16 +1,17 @@
 /*
- * NBlacklistFilter.hh
+ * EBlacklistFilter.hh
  *
  *  Created on: 2016-5-7
  *      Author: cxxjava@163.com
  */
 
-#ifndef NBLACKLISTFILTER_HH_
-#define NBLACKLISTFILTER_HH_
+#ifndef EBLACKLISTFILTER_HH_
+#define EBLACKLISTFILTER_HH_
 
-#include "NIoFilterAdapter.hh"
-#include "NSubnet.hh"
 #include "ELog.hh"
+
+#include "./EIoFilterAdapter.hh"
+#include "./ESubnet.hh"
 
 namespace efc {
 namespace naf {
@@ -21,7 +22,7 @@ namespace naf {
  *
  */
 
-class NBlacklistFilter: public NIoFilterAdapter {
+class EBlacklistFilter: public EIoFilterAdapter {
 public:
 	/**
 	 * Sets the addresses to be blacklisted.
@@ -30,7 +31,7 @@ public:
 	 *
 	 * @param addresses an array of addresses to be blacklisted.
 	 */
-	NBlacklistFilter* setBlacklist(EA<EInetAddress*>* addresses);
+	EBlacklistFilter* setBlacklist(EA<EInetAddress*>* addresses);
 
 	/**
 	 * Sets the subnets to be blacklisted.
@@ -39,7 +40,7 @@ public:
 	 *
 	 * @param subnets an array of subnets to be blacklisted.
 	 */
-	NBlacklistFilter* setSubnetBlacklist(EA<NSubnet*>* subnets);
+	EBlacklistFilter* setSubnetBlacklist(EA<ESubnet*>* subnets);
 
 	/**
 	 * Sets the addresses to be blacklisted.
@@ -51,7 +52,7 @@ public:
 	 * @throws IllegalArgumentException if the specified collections contains
 	 *         non-{@link InetAddress} objects.
 	 */
-	NBlacklistFilter* setBlacklist(EIterable<EInetAddress*>* addresses);
+	EBlacklistFilter* setBlacklist(EIterable<EInetAddress*>* addresses);
 
 	/**
 	 * Sets the subnets to be blacklisted.
@@ -60,52 +61,52 @@ public:
 	 *
 	 * @param subnets an array of subnets to be blacklisted.
 	 */
-	NBlacklistFilter* setSubnetBlacklist(EIterable<NSubnet*>* subnets);
+	EBlacklistFilter* setSubnetBlacklist(EIterable<ESubnet*>* subnets);
 
 	/**
 	 * Blocks the specified endpoint.
 	 *
 	 * @param address The address to block
 	 */
-	NBlacklistFilter* block(EInetAddress* address);
-	NBlacklistFilter* block(const char* hostname);
+	EBlacklistFilter* block(EInetAddress* address);
+	EBlacklistFilter* block(const char* hostname);
 
 	/**
 	 * Blocks the specified subnet.
 	 *
 	 * @param subnet The subnet to block
 	 */
-	NBlacklistFilter* block(NSubnet* subnet);
+	EBlacklistFilter* block(ESubnet* subnet);
 
 	/**
 	 * Unblocks the specified endpoint.
 	 *
 	 * @param address The address to unblock
 	 */
-	NBlacklistFilter* unblock(EInetAddress* address);
-	NBlacklistFilter* unblock(const char* hostname);
+	EBlacklistFilter* unblock(EInetAddress* address);
+	EBlacklistFilter* unblock(const char* hostname);
 
 	/**
 	 * Unblocks the specified subnet.
 	 *
 	 * @param subnet The subnet to unblock
 	 */
-	NBlacklistFilter* unblock(NSubnet* subnet);
+	EBlacklistFilter* unblock(ESubnet* subnet);
 
 	/**
 	 * {@inheritDoc}
 	 */
-	virtual boolean sessionCreated(NIoFilter::NextFilter* nextFilter, NIoSession* session) THROWS(EException);
+	virtual boolean sessionCreated(EIoFilter::NextFilter* nextFilter, EIoSession* session) THROWS(EException);
 
 private:
 	static sp<ELogger> LOGGER;// = LoggerFactory.getLogger(BlacklistFilter.class);
 
 	/** The list of blocked addresses */
-	ECopyOnWriteArrayList<NSubnet> blacklist;
+	ECopyOnWriteArrayList<ESubnet> blacklist;
 
-	boolean isBlocked(NIoSession* session);
+	boolean isBlocked(EIoSession* session);
 };
 
 } /* namespace naf */
 } /* namespace efc */
-#endif /* NBLACKLISTFILTER_HH_ */
+#endif /* EBLACKLISTFILTER_HH_ */

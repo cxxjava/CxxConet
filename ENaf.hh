@@ -12,22 +12,24 @@
 
 #include "Efc.hh"
 
-//esvr
-#include "NIoBuffer.hh"
-#include "NIoFilter.hh"
-#include "NIoFilterAdapter.hh"
-#include "NIoFilterChain.hh"
-#include "NIoFilterChainBuilder.hh"
-#include "NIoService.hh"
-#include "NIoSession.hh"
-#include "NSubnet.hh"
-#include "NSocketSession.hh"
-#include "NSocketAcceptor.hh"
-#include "NBlacklistFilter.hh"
-#include "NWhitelistFilter.hh"
-#include "NHttpCodecFilter.hh"
-#include "NHttpRequest.hh"
-#include "NHttpResponse.hh"
+//core
+#include "./inc/EIoBuffer.hh"
+#include "./inc/EIoFilter.hh"
+#include "./inc/EIoFilterAdapter.hh"
+#include "./inc/EIoFilterChain.hh"
+#include "./inc/EIoFilterChainBuilder.hh"
+#include "./inc/EIoService.hh"
+#include "./inc/EIoSession.hh"
+#include "./inc/ESubnet.hh"
+#include "./inc/ESocketSession.hh"
+#include "./inc/ESocketAcceptor.hh"
+#include "./inc/EBlacklistFilter.hh"
+#include "./inc/EWhitelistFilter.hh"
+
+//filter
+#include "./filter/http/EHttpCodecFilter.hh"
+#include "./filter/http/EHttpRequest.hh"
+#include "./filter/http/EHttpResponse.hh"
 
 using namespace efc::naf;
 

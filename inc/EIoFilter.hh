@@ -1,22 +1,21 @@
 /*
- * NIoFilter.hh
+ * EIoFilter.hh
  *
  *  Created on: 2017-3-16
  *      Author: cxxjava@163.com
  */
 
-#ifndef NIOFILTER_HH_
-#define NIOFILTER_HH_
+#ifndef EIOFILTER_HH_
+#define EIOFILTER_HH_
 
-#include "NIoSession.hh"
-#include "Efc.hh"
+#include "./EIoSession.hh"
 
 namespace efc {
 namespace naf {
 
-interface NIoFilterChain;
+interface EIoFilterChain;
 
-interface NIoFilter: virtual public EObject {
+interface EIoFilter: virtual public EObject {
 	/**
 	 * Represents the next {@link IoFilter} in {@link IoFilterChain}.
 	 */
@@ -29,14 +28,14 @@ interface NIoFilter: virtual public EObject {
 		 *
 		 * @param session The {@link IoSession} which has to process this invocation
 		 */
-		virtual boolean sessionCreated(NIoSession* session) = 0;
+		virtual boolean sessionCreated(EIoSession* session) = 0;
 
 		/**
 		 * Forwards <tt>sessionClosed</tt> event to next filter.
 		 *
 		 * @param session The {@link IoSession} which has to process this invocation
 		 */
-		virtual void sessionClosed(NIoSession* session) = 0;
+		virtual void sessionClosed(EIoSession* session) = 0;
 
 		/**
 		 * Forwards <tt>messageReceived</tt> event to next filter.
@@ -44,7 +43,7 @@ interface NIoFilter: virtual public EObject {
 		 * @param session The {@link IoSession} which has to process this invocation
 		 * @param message The received message
 		 */
-		virtual sp<EObject> messageReceived(NIoSession* session, sp<EObject> message) = 0;
+		virtual sp<EObject> messageReceived(EIoSession* session, sp<EObject> message) = 0;
 
 		/**
 		 * Forwards <tt>messageSend</tt> event to next filter.
@@ -53,10 +52,10 @@ interface NIoFilter: virtual public EObject {
 		 * @param data The message data to write
 		 * @param size The message data size
 		 */
-		virtual sp<EObject> messageSend(NIoSession* session, sp<EObject> message) = 0;
+		virtual sp<EObject> messageSend(EIoSession* session, sp<EObject> message) = 0;
 	};
 
-	virtual ~NIoFilter() {
+	virtual ~EIoFilter() {
 	}
 
 	/**
@@ -68,7 +67,7 @@ interface NIoFilter: virtual public EObject {
 	 * @param session The {@link IoSession} which has received this event
 	 * @throws Exception If an error occurred while processing the event
 	 */
-	virtual boolean sessionCreated(NextFilter* nextFilter, NIoSession* session)
+	virtual boolean sessionCreated(NextFilter* nextFilter, EIoSession* session)
 			THROWS(EException) = 0;
 
 	/**
@@ -80,7 +79,7 @@ interface NIoFilter: virtual public EObject {
 	 * @param session The {@link IoSession} which has received this event
 	 * @throws Exception If an error occurred while processing the event
 	 */
-	virtual void sessionClosed(NextFilter* nextFilter, NIoSession* session)
+	virtual void sessionClosed(NextFilter* nextFilter, EIoSession* session)
 			THROWS(EException) = 0;
 
 	/**
@@ -93,7 +92,7 @@ interface NIoFilter: virtual public EObject {
 	 * @param message The received message
 	 * @throws Exception If an error occurred while processing the event
 	 */
-	virtual sp<EObject> messageReceived(NextFilter* nextFilter, NIoSession* session,
+	virtual sp<EObject> messageReceived(NextFilter* nextFilter, EIoSession* session,
 			sp<EObject> message) THROWS(EException) = 0;
 
 	/**
@@ -106,10 +105,10 @@ interface NIoFilter: virtual public EObject {
 	 * @param writeRequest The {@link WriteRequest} that contains the sent message
 	 * @throws Exception If an error occurred while processing the event
 	 */
-	virtual sp<EObject> messageSend(NextFilter* nextFilter, NIoSession* session,
+	virtual sp<EObject> messageSend(NextFilter* nextFilter, EIoSession* session,
 			sp<EObject> message) THROWS(EException) = 0;
 };
 
 } /* namespace naf */
 } /* namespace efc */
-#endif /* NIOFILTER_HH_ */
+#endif /* EIOFILTER_HH_ */

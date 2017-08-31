@@ -1,27 +1,27 @@
 /*
- * NIoServiceStatistics.hh
+ * EIoServiceStatistics.hh
  *
  *  Created on: 2017-4-15
  *      Author: cxxjava@163.com
  */
 
-#ifndef NIOSERVICESTATISTICS_HH_
-#define NIOSERVICESTATISTICS_HH_
+#ifndef EIOSERVICESTATISTICS_HH_
+#define EIOSERVICESTATISTICS_HH_
 
 #include "Efc.hh"
 
 namespace efc {
 namespace naf {
 
-class NIoService;
+class EIoService;
 
 /**
- * Provides usage statistics for an {@link NIoService} instance.
+ * Provides usage statistics for an {@link EIoService} instance.
  *
  */
-class NIoServiceStatistics : public EObject {
+class EIoServiceStatistics : public EObject {
 public:
-	NIoServiceStatistics(NIoService* service);
+	EIoServiceStatistics(EIoService* service);
 
 	/**
 	 * Returns the maximum number of sessions which were being managed at the
@@ -138,8 +138,8 @@ public:
 	void setThroughputCalculationInterval(int throughputCalculationInterval);
 
 protected:
-	friend class NSocketAcceptor;
-	friend class NIoSession;
+	friend class ESocketAcceptor;
+	friend class EIoSession;
 
 	EAtomicDouble readBytesThroughput;
 	EAtomicDouble writtenBytesThroughput;
@@ -242,7 +242,7 @@ private:
 		EAtomicLLong lastWriteTime;
 	};
 
-	NIoService* service;
+	EIoService* service;
 	int workThreads;
 	EA<ThreadThroughput*> threadThroughput;
 
@@ -255,4 +255,4 @@ private:
 
 } /* namespace naf */
 } /* namespace efc */
-#endif /* NIOSERVICESTATISTICS_HH_ */
+#endif /* EIOSERVICESTATISTICS_HH_ */

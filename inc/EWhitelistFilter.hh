@@ -1,16 +1,17 @@
 /*
- * NWhitelistFilter.hh
+ * EWhitelistFilter.hh
  *
  *  Created on: 2016-5-7
  *      Author: cxxjava@163.com
  */
 
-#ifndef NWHITELISTFILTER_HH_
-#define NWHITELISTFILTER_HH_
+#ifndef EWHITELISTFILTER_HH_
+#define EWHITELISTFILTER_HH_
 
-#include "NIoFilterAdapter.hh"
-#include "NSubnet.hh"
 #include "ELog.hh"
+
+#include "./EIoFilterAdapter.hh"
+#include "./ESubnet.hh"
 
 namespace efc {
 namespace naf {
@@ -22,7 +23,7 @@ namespace naf {
  * @see: BlacklistFilter.java
  */
 
-class NWhitelistFilter: public NIoFilterAdapter {
+class EWhitelistFilter: public EIoFilterAdapter {
 public:
 	/**
 	 * Sets the addresses to be whitelisted.
@@ -31,7 +32,7 @@ public:
 	 *
 	 * @param addresses an array of addresses to be whitelisted.
 	 */
-	NWhitelistFilter* setWhitelist(EA<EInetAddress*>* addresses);
+	EWhitelistFilter* setWhitelist(EA<EInetAddress*>* addresses);
 
 	/**
 	 * Sets the subnets to be whitelisted.
@@ -40,7 +41,7 @@ public:
 	 *
 	 * @param subnets an array of subnets to be whitelisted.
 	 */
-	NWhitelistFilter* setSubnetWhitelist(EA<NSubnet*>* subnets);
+	EWhitelistFilter* setSubnetWhitelist(EA<ESubnet*>* subnets);
 
 	/**
 	 * Sets the addresses to be whitelisted.
@@ -52,7 +53,7 @@ public:
 	 * @throws IllegalArgumentException if the specified collections contains
 	 *         non-{@link InetAddress} objects.
 	 */
-	NWhitelistFilter* setWhitelist(EIterable<EInetAddress*>* addresses);
+	EWhitelistFilter* setWhitelist(EIterable<EInetAddress*>* addresses);
 
 	/**
 	 * Sets the subnets to be whitelisted.
@@ -61,52 +62,52 @@ public:
 	 *
 	 * @param subnets an array of subnets to be whitelisted.
 	 */
-	NWhitelistFilter* setSubnetWhitelist(EIterable<NSubnet*>* subnets);
+	EWhitelistFilter* setSubnetWhitelist(EIterable<ESubnet*>* subnets);
 
 	/**
 	 * Allows the specified endpoint.
 	 *
 	 * @param address The address to allow
 	 */
-	NWhitelistFilter* allow(EInetAddress* address);
-	NWhitelistFilter* allow(const char* hostname);
+	EWhitelistFilter* allow(EInetAddress* address);
+	EWhitelistFilter* allow(const char* hostname);
 
 	/**
 	 * Allows the specified subnet.
 	 *
 	 * @param subnet The subnet to allow
 	 */
-	NWhitelistFilter* allow(NSubnet* subnet);
+	EWhitelistFilter* allow(ESubnet* subnet);
 
 	/**
 	 * Disallows the specified endpoint.
 	 *
 	 * @param address The address to disallow
 	 */
-	NWhitelistFilter* disallow(EInetAddress* address);
-	NWhitelistFilter* disallow(const char* hostname);
+	EWhitelistFilter* disallow(EInetAddress* address);
+	EWhitelistFilter* disallow(const char* hostname);
 
 	/**
 	 * Disallows the specified subnet.
 	 *
 	 * @param subnet The subnet to disallow
 	 */
-	NWhitelistFilter* disallow(NSubnet* subnet);
+	EWhitelistFilter* disallow(ESubnet* subnet);
 
 	/**
 	 * {@inheritDoc}
 	 */
-	virtual boolean sessionCreated(NIoFilter::NextFilter* nextFilter, NIoSession* session) THROWS(EException);
+	virtual boolean sessionCreated(EIoFilter::NextFilter* nextFilter, EIoSession* session) THROWS(EException);
 
 private:
 	static sp<ELogger> LOGGER;// = LoggerFactory.getLogger(WhitelistFilter.class);
 
 	/** The list of allowed addresses */
-	ECopyOnWriteArrayList<NSubnet> whitelist;
+	ECopyOnWriteArrayList<ESubnet> whitelist;
 
-	boolean isAllowed(NIoSession* session);
+	boolean isAllowed(EIoSession* session);
 };
 
 } /* namespace naf */
 } /* namespace efc */
-#endif /* NWHITELISTFILTER_HH_ */
+#endif /* EWHITELISTFILTER_HH_ */

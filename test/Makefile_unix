@@ -59,20 +59,20 @@ LINKOPTION = -std=$(CPPSTD) -g
 LIBDIRS = -L../../CxxJDK/lib/$(LIBDIR)
 APPENDLIB = 
 
-BASE_OBJS =  ../src/NBlacklistFilter.o \
-	../src/NIoBuffer.o \
-	../src/NIoFilterAdapter.o \
-	../src/NIoFilterChain.o \
-	../src/NIoFilterChainBuidler.o \
-	../src/NIoServiceStatistics.o \
-	../src/NIoSession.o \
-	../src/NSocketAcceptor.o \
-	../src/NSocketSession.o \
-	../src/NSubnet.o \
-	../src/NWhitelistFilter.o \
-	../filter/http/NHttpCodecFilter.o \
-	../filter/http/NHttpRequest.o \
-	../filter/http/NHttpResponse.o \
+BASE_OBJS =  ../src/EBlacklistFilter.o \
+	../src/EIoBuffer.o \
+	../src/EIoFilterAdapter.o \
+	../src/EIoFilterChain.o \
+	../src/EIoFilterChainBuidler.o \
+	../src/EIoServiceStatistics.o \
+	../src/EIoSession.o \
+	../src/ESocketAcceptor.o \
+	../src/ESocketSession.o \
+	../src/ESubnet.o \
+	../src/EWhitelistFilter.o \
+	../filter/http/EHttpCodecFilter.o \
+	../filter/http/EHttpRequest.o \
+	../filter/http/EHttpResponse.o \
 	../../CxxFiber/src/EContext.o \
 	../../CxxFiber/src/EFiber.o \
 	../../CxxFiber/src/EFiberBlocker.o \

@@ -1,18 +1,18 @@
 /*
- * NWhitelistFilter.cpp
+ * EWhitelistFilter.cpp
  *
  *  Created on: 2016-5-7
  *      Author: cxxjava@163.com
  */
 
-#include "NWhitelistFilter.hh"
+#include "../inc/EWhitelistFilter.hh"
 
 namespace efc {
 namespace naf {
 
-sp<ELogger> NWhitelistFilter::LOGGER = ELoggerManager::getLogger("NWhitelistFilter");
+sp<ELogger> EWhitelistFilter::LOGGER = ELoggerManager::getLogger("EWhitelistFilter");
 
-NWhitelistFilter* NWhitelistFilter::setWhitelist(EA<EInetAddress*>* addresses) {
+EWhitelistFilter* EWhitelistFilter::setWhitelist(EA<EInetAddress*>* addresses) {
 	if (addresses == null) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "addresses");
 	}
@@ -27,7 +27,7 @@ NWhitelistFilter* NWhitelistFilter::setWhitelist(EA<EInetAddress*>* addresses) {
 	return this;
 }
 
-NWhitelistFilter* NWhitelistFilter::setSubnetWhitelist(EA<NSubnet*>* subnets) {
+EWhitelistFilter* EWhitelistFilter::setSubnetWhitelist(EA<ESubnet*>* subnets) {
 	if (subnets == null) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "Subnets must not be null");
 	}
@@ -35,14 +35,14 @@ NWhitelistFilter* NWhitelistFilter::setSubnetWhitelist(EA<NSubnet*>* subnets) {
 	whitelist.clear();
 
 	for (int i = 0; i < subnets->length(); i++) {
-		NSubnet* subnet = (*subnets)[i];
+		ESubnet* subnet = (*subnets)[i];
 		allow(subnet);
 	}
 
 	return this;
 }
 
-NWhitelistFilter* NWhitelistFilter::setWhitelist(EIterable<EInetAddress*>* addresses) {
+EWhitelistFilter* EWhitelistFilter::setWhitelist(EIterable<EInetAddress*>* addresses) {
 	if (addresses == null) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "addresses");
 	}
@@ -57,14 +57,14 @@ NWhitelistFilter* NWhitelistFilter::setWhitelist(EIterable<EInetAddress*>* addre
 	return this;
 }
 
-NWhitelistFilter* NWhitelistFilter::setSubnetWhitelist(EIterable<NSubnet*>* subnets) {
+EWhitelistFilter* EWhitelistFilter::setSubnetWhitelist(EIterable<ESubnet*>* subnets) {
 	if (subnets == null) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "Subnets must not be null");
 	}
 
 	whitelist.clear();
 
-	sp<EIterator<NSubnet*> > iter = subnets->iterator();
+	sp<EIterator<ESubnet*> > iter = subnets->iterator();
 	while (iter->hasNext()) {
 		allow(iter->next());
 	}
@@ -72,48 +72,48 @@ NWhitelistFilter* NWhitelistFilter::setSubnetWhitelist(EIterable<NSubnet*>* subn
 	return this;
 }
 
-NWhitelistFilter* NWhitelistFilter::allow(EInetAddress* address) {
+EWhitelistFilter* EWhitelistFilter::allow(EInetAddress* address) {
 	if (address == null) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "Adress to allow can not be null");
 	}
 
-	whitelist.add(new NSubnet(address, 32));
+	whitelist.add(new ESubnet(address, 32));
 
 	return this;
 }
 
-NWhitelistFilter* NWhitelistFilter::allow(const char* hostname) {
+EWhitelistFilter* EWhitelistFilter::allow(const char* hostname) {
 	EInetAddress address = EInetAddress::getByName(hostname);
 	return this->allow(&address);
 }
 
-NWhitelistFilter* NWhitelistFilter::allow(NSubnet* subnet) {
+EWhitelistFilter* EWhitelistFilter::allow(ESubnet* subnet) {
 	if (subnet == null) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "Subnet can not be null");
 	}
 
-	whitelist.add(new NSubnet(*subnet));
+	whitelist.add(new ESubnet(*subnet));
 
 	return this;
 }
 
-NWhitelistFilter* NWhitelistFilter::disallow(EInetAddress* address) {
+EWhitelistFilter* EWhitelistFilter::disallow(EInetAddress* address) {
 	if (address == null) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "Adress to disallow can not be null");
 	}
 
-	NSubnet subnet(address, 32);
+	ESubnet subnet(address, 32);
 	whitelist.remove(&subnet);
 
 	return this;
 }
 
-NWhitelistFilter* NWhitelistFilter::disallow(const char* hostname) {
+EWhitelistFilter* EWhitelistFilter::disallow(const char* hostname) {
 	EInetAddress address = EInetAddress::getByName(hostname);
 	return this->disallow(&address);
 }
 
-NWhitelistFilter* NWhitelistFilter::disallow(NSubnet* subnet) {
+EWhitelistFilter* EWhitelistFilter::disallow(ESubnet* subnet) {
 	if (subnet == null) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "Subnet can not be null");
 	}
@@ -123,18 +123,21 @@ NWhitelistFilter* NWhitelistFilter::disallow(NSubnet* subnet) {
 	return this;
 }
 
-boolean NWhitelistFilter::sessionCreated(NIoFilter::NextFilter* nextFilter,
-		NIoSession* session) {
+boolean EWhitelistFilter::sessionCreated(EIoFilter::NextFilter* nextFilter,
+		EIoSession* session) {
 	if (isAllowed(session)) {
 		// forward if allowed
 		return nextFilter->sessionCreated(session);
 	} else {
-		LOGGER->warn(__FILE__, __LINE__, "Remote address not in the whitelist; closing.");
+		EString msg = EString::formatOf(
+				"Remote address: %s not in the whitelist; closing.",
+				session->getRemoteAddress()->toString().c_str());
+		LOGGER->warn(__FILE__, __LINE__, msg.c_str());
 		return false;
 	}
 }
 
-boolean NWhitelistFilter::isAllowed(NIoSession* session) {
+boolean EWhitelistFilter::isAllowed(EIoSession* session) {
 	EInetSocketAddress* remoteAddress = session->getRemoteAddress();
 
 	//if (remoteAddress instanceof InetSocketAddress)
@@ -142,9 +145,9 @@ boolean NWhitelistFilter::isAllowed(NIoSession* session) {
 		EInetAddress* address = remoteAddress->getAddress();
 
 		// check all subnets
-		sp<EConcurrentIterator<NSubnet> > iter = whitelist.iterator();
+		sp<EConcurrentIterator<ESubnet> > iter = whitelist.iterator();
 		while (iter->hasNext()) {
-			sp<NSubnet> subnet = iter->next();
+			sp<ESubnet> subnet = iter->next();
 			if (subnet->inSubnet(address)) {
 				return true;
 			}

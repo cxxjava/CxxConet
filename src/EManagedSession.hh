@@ -1,14 +1,14 @@
 /*
- * NManagedSession.hh
+ * EManagedSession.hh
  *
  *  Created on: 2017-3-31
  *      Author: cxxjava@163.com
  */
 
-#ifndef NMANAGEDSESSION_HH_
-#define NMANAGEDSESSION_HH_
+#ifndef EMANAGEDSESSION_HH_
+#define EMANAGEDSESSION_HH_
 
-#include "NIoService.hh"
+#include "../inc/EIoService.hh"
 
 namespace efc {
 namespace naf {
@@ -17,9 +17,9 @@ namespace naf {
  * Only thread local safe!
  */
 
-class NManagedSession: public EObject {
+class EManagedSession: public EObject {
 public:
-	NManagedSession(NIoService* service) :
+	EManagedSession(EIoService* service) :
 		service(service),
 		workThreads(service->getWorkThreads()),
 		threadSessions(workThreads) {
@@ -28,7 +28,7 @@ public:
 		}
 	}
 
-	void addSession(int fd, NIoSession* session) {
+	void addSession(int fd, EIoSession* session) {
 		EFiber* fiber = EFiber::currentFiber();
 		if (!fiber) {
 			throw ENullPointerException(__FILE__, __LINE__, "Out of fiber schedule.");
@@ -48,7 +48,7 @@ public:
 		ts->sessionsCounter--;
 	}
 
-	EHashMap<int, NIoSession*>* getCurrentThreadManagedSessions() {
+	EHashMap<int, EIoSession*>* getCurrentThreadManagedSessions() {
 		EFiber* fiber = EFiber::currentFiber();
 		if (!fiber) {
 			throw ENullPointerException(__FILE__, __LINE__, "Out of fiber schedule.");
@@ -67,20 +67,20 @@ public:
 
 private:
 	struct ThreadSessions: public EObject {
-		EHashMap<int, NIoSession*>* managedSessions;
+		EHashMap<int, EIoSession*>* managedSessions;
 		EAtomicCounter sessionsCounter;
-		ThreadSessions(): managedSessions(new EHashMap<int, NIoSession*>(8192, false)) {
+		ThreadSessions(): managedSessions(new EHashMap<int, EIoSession*>(8192, false)) {
 		}
 		~ThreadSessions() {
 			delete managedSessions;
 		}
 	};
 
-	NIoService* service;
+	EIoService* service;
 	int workThreads;
 	EA<ThreadSessions*> threadSessions;
 };
 
 } /* namespace naf */
 } /* namespace efc */
-#endif /* NMANAGEDSESSION_HH_ */
+#endif /* EMANAGEDSESSION_HH_ */

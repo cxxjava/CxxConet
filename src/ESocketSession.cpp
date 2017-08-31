@@ -1,27 +1,27 @@
 /*
- * NSocketSession.cpp
+ * ESocketSession.cpp
  *
  *  Created on: 2017-3-16
  *      Author: cxxjava@163.com
  */
 
-#include "NSocketSession.hh"
+#include "../inc/ESocketSession.hh"
 
 namespace efc {
 namespace naf {
 
-NSocketSession::~NSocketSession() {
+ESocketSession::~ESocketSession() {
 	//
 }
 
-NSocketSession::NSocketSession(NIoService* service, sp<ESocket>& socket):
-		NIoSession(service),
+ESocketSession::ESocketSession(EIoService* service, sp<ESocket>& socket):
+		EIoSession(service),
 		socket_(socket), closed_(false) {
 }
 
-sp<EObject> NSocketSession::read() {
+sp<EObject> ESocketSession::read() {
 	if (ioBuffer == null) {
-		ioBuffer = NIoBuffer::allocate(ES_MAX(socket_->getReceiveBufferSize(), 512));
+		ioBuffer = EIoBuffer::allocate(ES_MAX(socket_->getReceiveBufferSize(), 512));
 		ioBuffer->setAutoExpand(true);
 	}
 
@@ -57,13 +57,13 @@ RESUME:
 	throw EIOException(__FILE__, __LINE__, "socket session read.");
 }
 
-boolean NSocketSession::write(sp<EObject> message) {
+boolean ESocketSession::write(sp<EObject> message) {
 	EOutputStream* os = socket_->getOutputStream();
 
 	// on session message send.
 	sp<EObject> out = filterChain->fireMessageSend(message);
 
-	sp<NIoBuffer> ib = dynamic_pointer_cast<NIoBuffer>(out);
+	sp<EIoBuffer> ib = dynamic_pointer_cast<EIoBuffer>(out);
 	if (ib != null) {
 		os->write(ib->current(), ib->remaining());
 		return true;
@@ -80,7 +80,7 @@ boolean NSocketSession::write(sp<EObject> message) {
 	return false;
 }
 
-void NSocketSession::close() {
+void ESocketSession::close() {
 	if (!closed_) {
 		filterChain->fireSessionClosed();
 		socket_->close();
@@ -88,23 +88,23 @@ void NSocketSession::close() {
 	}
 }
 
-EInetSocketAddress* NSocketSession::getRemoteAddress() {
+EInetSocketAddress* ESocketSession::getRemoteAddress() {
 	return socket_->getRemoteSocketAddress();
 }
 
-EInetSocketAddress* NSocketSession::getLocalAddress() {
+EInetSocketAddress* ESocketSession::getLocalAddress() {
 	return socket_->getLocalSocketAddress();
 }
 
-boolean NSocketSession::isSecured() {
+boolean ESocketSession::isSecured() {
 	return dynamic_pointer_cast<ESSLSocket>(socket_) != null;
 }
 
-boolean NSocketSession::isClosed() {
+boolean ESocketSession::isClosed() {
 	return closed_;
 }
 
-sp<ESocket> NSocketSession::getSocket() {
+sp<ESocket> ESocketSession::getSocket() {
 	return socket_;
 }
 

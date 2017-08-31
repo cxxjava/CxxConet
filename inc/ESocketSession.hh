@@ -1,34 +1,34 @@
 /*
- * NSocketSession.hh
+ * ESocketSession.hh
  *
  *  Created on: 2016-1-19
  *      Author: cxxjava@163.com
  */
 
-#ifndef NSOCKETSESSION_HH_
-#define NSOCKETSESSION_HH_
+#ifndef ESOCKETSESSION_HH_
+#define ESOCKETSESSION_HH_
 
-#include "NIoSession.hh"
-#include "NIoBuffer.hh"
-#include "NIoService.hh"
-#include "NIoFilterChain.hh"
+#include "./EIoSession.hh"
+#include "./EIoBuffer.hh"
+#include "./EIoService.hh"
+#include "./EIoFilterChain.hh"
 
 namespace efc {
 namespace naf {
 
-class NSocketSession: public NIoSession {
+class ESocketSession: public EIoSession {
 public:
-	virtual ~NSocketSession();
+	virtual ~ESocketSession();
 
 	/**
 	 *
-	 * Creates a new instance of NSocketSession.
+	 * Creates a new instance of ESocketSession.
 	 *
 	 * @param service the associated IoService
 	 * @param processor the associated IoProcessor
 	 * @param ch the used channel
 	 */
-	NSocketSession(NIoService* service, sp<ESocket>& socket);
+	ESocketSession(EIoService* service, sp<ESocket>& socket);
 
 	virtual sp<EObject> read();
 	virtual boolean write(sp<EObject> message);
@@ -63,7 +63,7 @@ private:
 	sp<ESocket> socket_;
 	boolean closed_;
 
-	sp<NIoBuffer> ioBuffer;
+	sp<EIoBuffer> ioBuffer;
 };
 
 //=============================================================================
@@ -77,10 +77,10 @@ private:
  * </ul>
  * <p>
  * Idle time settings are all disabled by default.  You can enable them
- * using {@link NSocketAcceptor#setIdleTime(IdleStatus,int)}.
+ * using {@link ESocketAcceptor#setIdleTime(IdleStatus,int)}.
  *
  */
-enum NIdleStatus {
+enum EIdleStatus {
 	/**
 	 * Represents the session status that no data is coming from the remote
 	 * peer.
@@ -95,4 +95,4 @@ enum NIdleStatus {
 
 } /* namespace naf */
 } /* namespace efc */
-#endif /* NSOCKETSESSION_HH_ */
+#endif /* ESOCKETSESSION_HH_ */

@@ -1,5 +1,5 @@
 /*
- * NIoFilterChainBuilder.hh
+ * EIoFilterChainBuilder.hh
  *
  *  Created on: 2017-3-16
  *      Author: cxxjava@163.com
@@ -8,8 +8,7 @@
 #ifndef NFILTERCHAINBUILDER_HH_
 #define NFILTERCHAINBUILDER_HH_
 
-#include "NIoFilterChain.hh"
-#include "Efc.hh"
+#include "./EIoFilterChain.hh"
 
 namespace efc {
 namespace naf {
@@ -37,14 +36,14 @@ namespace naf {
  *
  */
 
-class NIoFilterChainBuilder: public EObject {
+class EIoFilterChainBuilder: public EObject {
 public:
-	virtual ~NIoFilterChainBuilder();
+	virtual ~EIoFilterChainBuilder();
 
 	/**
 	 * Creates a new instance with an empty filter list.
 	 */
-	NIoFilterChainBuilder();
+	EIoFilterChainBuilder();
 
 	/**
 	 * Returns the {@link Entry} with the specified <tt>name</tt> in this chain.
@@ -52,7 +51,7 @@ public:
 	 * @param name The filter's name we are looking for
 	 * @return <tt>null</tt> if there's no such name in this chain
 	 */
-	NIoFilterChain::Entry* getEntry(const char* name);
+	EIoFilterChain::Entry* getEntry(const char* name);
 
 	/**
 	 * @see IoFilterChain#getEntry(IoFilter)
@@ -60,7 +59,7 @@ public:
 	 * @param filter The Filter we are looking for
 	 * @return The found Entry
 	 */
-	NIoFilterChain::Entry* getEntry(NIoFilter* filter);
+	EIoFilterChain::Entry* getEntry(EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#get(String)
@@ -68,7 +67,7 @@ public:
 	 * @param name The Filter's name we are looking for
 	 * @return The found Filter, or null
 	 */
-	NIoFilter* get(const char* name);
+	EIoFilter* get(const char* name);
 
 	/**
 	 * @see IoFilterChain#contains(String)
@@ -84,7 +83,7 @@ public:
 	 * @param filter The Filter we want to check if it's in the chain
 	 * @return <tt>true</tt> if the chain contains the given filter
 	 */
-	boolean contains(NIoFilter* filter);
+	boolean contains(EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#addFirst(String, IoFilter)
@@ -92,7 +91,7 @@ public:
 	 * @param name The filter's name
 	 * @param filter The filter to add
 	 */
-	void addFirst(const char* name, NIoFilter* filter);
+	void addFirst(const char* name, EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#addLast(String, IoFilter)
@@ -100,7 +99,7 @@ public:
 	 * @param name The filter's name
 	 * @param filter The filter to add
 	 */
-	void addLast(const char* name, NIoFilter* filter);
+	void addLast(const char* name, EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#addBefore(String, String, IoFilter)
@@ -109,7 +108,7 @@ public:
 	 * @param name The filter's name
 	 * @param filter The filter to add
 	 */
-	void addBefore(const char* baseName, const char* name, NIoFilter* filter);
+	void addBefore(const char* baseName, const char* name, EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#addAfter(String, String, IoFilter)
@@ -118,7 +117,7 @@ public:
 	 * @param name The filter's name
 	 * @param filter The filter to add
 	 */
-	void addAfter(const char* baseName, const char* name, NIoFilter* filter);
+	void addAfter(const char* baseName, const char* name, EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#remove(String)
@@ -126,7 +125,7 @@ public:
 	 * @param name The Filter's name to remove from the list of Filters
 	 * @return The removed IoFilter
 	 */
-	NIoFilter* remove(const char* name);
+	EIoFilter* remove(const char* name);
 
 	/**
 	 * @see IoFilterChain#remove(IoFilter)
@@ -134,7 +133,7 @@ public:
 	 * @param filter The Filter we want to remove from the list of Filters
 	 * @return The removed IoFilter
 	 */
-	NIoFilter* remove(NIoFilter* filter);
+	EIoFilter* remove(EIoFilter* filter);
 
 	/**
 	 * @see IoFilterChain#clear()
@@ -144,7 +143,7 @@ public:
 	/**
 	 * @see IoFilterChain#buildFilterChain(IoFilterChain)
 	 */
-	void buildFilterChain(NIoFilterChain* chain) THROWS(EException);
+	void buildFilterChain(EIoFilterChain* chain) THROWS(EException);
 
 	/**
 	 *
@@ -152,9 +151,9 @@ public:
 	virtual EStringBase toString();
 
 private:
-	ECopyOnWriteArrayList<NIoFilterChain::Entry> entries;
+	ECopyOnWriteArrayList<EIoFilterChain::Entry> entries;
 
-	void register_(int index, NIoFilterChain::Entry* e);
+	void register_(int index, EIoFilterChain::Entry* e);
 	void checkBaseName(const char* baseName);
 };
 

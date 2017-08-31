@@ -1,18 +1,18 @@
 /*
- * NIoServiceStatistics.cpp
+ * EIoServiceStatistics.cpp
  *
  *  Created on: 2014-9-15
  *      Author: cxxjava@163.com
  */
 
-#include "NIoServiceStatistics.hh"
-#include "NIoService.hh"
-#include "EFiber.hh"
+#include "../inc/EIoServiceStatistics.hh"
+#include "../inc/EIoService.hh"
+#include "Eco.hh"
 
 namespace efc {
 namespace naf {
 
-NIoServiceStatistics::NIoServiceStatistics(NIoService* service) :
+EIoServiceStatistics::EIoServiceStatistics(EIoService* service) :
 		service(service),
 		workThreads(service->getWorkThreads()),
 		threadThroughput(workThreads),
@@ -27,79 +27,79 @@ NIoServiceStatistics::NIoServiceStatistics(NIoService* service) :
 	}
 }
 
-int NIoServiceStatistics::getLargestManagedSessionCount() {
+int EIoServiceStatistics::getLargestManagedSessionCount() {
 	return largestManagedSessionCount.get();
 }
 
-llong NIoServiceStatistics::getCumulativeManagedSessionCount() {
+llong EIoServiceStatistics::getCumulativeManagedSessionCount() {
 	return cumulativeManagedSessionCount.get();
 }
 
-llong NIoServiceStatistics::getLastIoTime() {
+llong EIoServiceStatistics::getLastIoTime() {
 	return ES_MAX(lastReadTime.get(), lastWriteTime.get());
 }
 
-llong NIoServiceStatistics::getLastReadTime() {
+llong EIoServiceStatistics::getLastReadTime() {
 	return lastReadTime.get();
 }
 
-llong NIoServiceStatistics::getLastWriteTime() {
+llong EIoServiceStatistics::getLastWriteTime() {
 	return lastWriteTime.get();
 }
 
-llong NIoServiceStatistics::getReadBytes() {
+llong EIoServiceStatistics::getReadBytes() {
 	return readBytes.get();
 }
 
-llong NIoServiceStatistics::getWrittenBytes() {
+llong EIoServiceStatistics::getWrittenBytes() {
 	return writtenBytes.get();
 }
 
-llong NIoServiceStatistics::getReadMessages() {
+llong EIoServiceStatistics::getReadMessages() {
 	return readMessages.get();
 }
 
-llong NIoServiceStatistics::getWrittenMessages() {
+llong EIoServiceStatistics::getWrittenMessages() {
 	return writtenMessages.get();
 }
 
-double NIoServiceStatistics::getReadBytesThroughput() {
+double EIoServiceStatistics::getReadBytesThroughput() {
 	return readBytesThroughput.get();
 }
 
-double NIoServiceStatistics::getWrittenBytesThroughput() {
+double EIoServiceStatistics::getWrittenBytesThroughput() {
 	return writtenBytesThroughput.get();
 }
 
-double NIoServiceStatistics::getReadMessagesThroughput() {
+double EIoServiceStatistics::getReadMessagesThroughput() {
 	return readMessagesThroughput.get();
 }
 
-double NIoServiceStatistics::getWrittenMessagesThroughput() {
+double EIoServiceStatistics::getWrittenMessagesThroughput() {
 	return writtenMessagesThroughput.get();
 }
 
-double NIoServiceStatistics::getLargestReadBytesThroughput() {
+double EIoServiceStatistics::getLargestReadBytesThroughput() {
 	return largestReadBytesThroughput.get();
 }
 
-double NIoServiceStatistics::getLargestWrittenBytesThroughput() {
+double EIoServiceStatistics::getLargestWrittenBytesThroughput() {
 	return largestWrittenBytesThroughput.get();
 }
 
-double NIoServiceStatistics::getLargestReadMessagesThroughput() {
+double EIoServiceStatistics::getLargestReadMessagesThroughput() {
 	return largestReadMessagesThroughput.get();
 }
 
-double NIoServiceStatistics::getLargestWrittenMessagesThroughput() {
+double EIoServiceStatistics::getLargestWrittenMessagesThroughput() {
 	return largestWrittenMessagesThroughput.get();
 }
 
-int NIoServiceStatistics::getThroughputCalculationInterval() {
+int EIoServiceStatistics::getThroughputCalculationInterval() {
 	return throughputCalculationInterval.get();
 }
 
-void NIoServiceStatistics::setThroughputCalculationInterval(
+void EIoServiceStatistics::setThroughputCalculationInterval(
 		int throughputCalculationInterval) {
 	if (throughputCalculationInterval < 0) {
 		EString msg("throughputCalculationInterval: ");
@@ -110,7 +110,7 @@ void NIoServiceStatistics::setThroughputCalculationInterval(
 	this->throughputCalculationInterval.set(throughputCalculationInterval);
 }
 
-void NIoServiceStatistics::updateThroughput(llong currentTime) {
+void EIoServiceStatistics::updateThroughput(llong currentTime) {
 	// readBytes, writtenBytes, readMessages, writtenMessages, lastReadTime, lastWriteTime
 	llong readBytes, writtenBytes, readMessages, writtenMessages;
 	llong lastReadTime0, lastReadTime;
@@ -184,7 +184,7 @@ void NIoServiceStatistics::updateThroughput(llong currentTime) {
 	lastThroughputCalculationTime = currentTime;
 }
 
-void NIoServiceStatistics::increaseReadBytes(long increment, llong currentTime) {
+void EIoServiceStatistics::increaseReadBytes(long increment, llong currentTime) {
 	EFiber* fiber = EFiber::currentFiber();
 	if (!fiber) {
 		throw ENullPointerException(__FILE__, __LINE__, "Out of fiber schedule.");
@@ -194,7 +194,7 @@ void NIoServiceStatistics::increaseReadBytes(long increment, llong currentTime) 
 	tt->lastReadTime.set(currentTime);
 }
 
-void NIoServiceStatistics::increaseReadMessages(llong currentTime) {
+void EIoServiceStatistics::increaseReadMessages(llong currentTime) {
 	EFiber* fiber = EFiber::currentFiber();
 	if (!fiber) {
 		throw ENullPointerException(__FILE__, __LINE__, "Out of fiber schedule.");
@@ -204,7 +204,7 @@ void NIoServiceStatistics::increaseReadMessages(llong currentTime) {
 	tt->lastReadTime.set(currentTime);
 }
 
-void NIoServiceStatistics::increaseWrittenBytes(int increment, llong currentTime) {
+void EIoServiceStatistics::increaseWrittenBytes(int increment, llong currentTime) {
 	EFiber* fiber = EFiber::currentFiber();
 	if (!fiber) {
 		throw ENullPointerException(__FILE__, __LINE__, "Out of fiber schedule.");
@@ -214,7 +214,7 @@ void NIoServiceStatistics::increaseWrittenBytes(int increment, llong currentTime
 	tt->lastWriteTime.set(currentTime);
 }
 
-void NIoServiceStatistics::increaseWrittenMessages(llong currentTime) {
+void EIoServiceStatistics::increaseWrittenMessages(llong currentTime) {
 	EFiber* fiber = EFiber::currentFiber();
 	if (!fiber) {
 		throw ENullPointerException(__FILE__, __LINE__, "Out of fiber schedule.");
@@ -224,19 +224,19 @@ void NIoServiceStatistics::increaseWrittenMessages(llong currentTime) {
 	tt->lastWriteTime.set(currentTime);
 }
 //
-//void NIoServiceStatistics::setLastReadTime(llong lastReadTime) {
+//void EIoServiceStatistics::setLastReadTime(llong lastReadTime) {
 //	SYNCBLOCK(&throughputCalculationLock) {
 //		this->lastReadTime = lastReadTime;
 //    }}
 //}
 //
-//void NIoServiceStatistics::setLastWriteTime(llong lastWriteTime) {
+//void EIoServiceStatistics::setLastWriteTime(llong lastWriteTime) {
 //	SYNCBLOCK(&throughputCalculationLock) {
 //		this->lastWriteTime = lastWriteTime;
 //    }}
 //}
 //
-//void NIoServiceStatistics::setLastThroughputCalculationTime(
+//void EIoServiceStatistics::setLastThroughputCalculationTime(
 //		llong lastThroughputCalculationTime) {
 //	SYNCBLOCK(&throughputCalculationLock) {
 //		this->lastThroughputCalculationTime = lastThroughputCalculationTime;

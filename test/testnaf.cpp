@@ -1,23 +1,24 @@
-#include "main.hh"
+#include "es_main.h"
 #include "ENaf.hh"
-#include "http_parser.h"
+#include "./http_parser.h"
+#include "./http_parser.c"
 
 #define LOG(fmt,...) ESystem::out->println(fmt, ##__VA_ARGS__)
 
-#define USE_SSL 0
+#define USE_SSL 1
 #define SSL_FILE_PATH ""
 
 #define USE_HTTP_FILTER 1
-#define PRINT_STATISTICS 1
+#define PRINT_STATISTICS 0
 
-static void onListening(NSocketAcceptor* acceptor) {
+static void onListening(ESocketAcceptor* acceptor) {
 	LOG("onListening...");
 
 #if PRINT_STATISTICS
 	while (!acceptor->isDisposed()) {
 		sleep(10);
 
-		NIoServiceStatistics* ss = acceptor->getStatistics();
+		EIoServiceStatistics* ss = acceptor->getStatistics();
 		LOG("CumulativeManagedSessionCount=%ld", ss->getCumulativeManagedSessionCount());
 		LOG("LargestManagedSessionCount=%ld", ss->getLargestManagedSessionCount());
 		LOG("LargestReadBytesThroughput=%lf", ss->getLargestReadBytesThroughput());
@@ -41,16 +42,16 @@ static void onListening(NSocketAcceptor* acceptor) {
 }
 
 #if USE_HTTP_FILTER
-static void onConnection(NSocketSession* session) {
-	LOG("onConnection...");
+static void onConnection(ESocketSession* session, ESocketAcceptor::Service* service) {
+	LOG("onConnection: service=%s", service->toString().c_str());
 
 //	sleep(10);
 
-	sp<NHttpRequest> request;
-	while ((request = dynamic_pointer_cast<NHttpRequest>(session->read())) != null) {
-		LOG("%.*s", request->m_BodyLen+request->m_HeadLen, request->m_HttpData);
+	sp<EHttpRequest> request;
+	while ((request = dynamic_pointer_cast<EHttpRequest>(session->read())) != null) {
+		LOG("%.*s", request->getBodyLen()+request->getHeadLen(), request->getHttpData());
 
-		session->write(new NHttpResponse());  // send text.
+		session->write(new EHttpResponse("OK"));  // send text.
 //		session->write(new EFile("xxx.zip")); // send file.
 
 //		break;
@@ -65,9 +66,9 @@ static int on_info(http_parser* p) {
 }
 
 static int on_message_complete(http_parser* p) {
-	NSocketSession* session = (NSocketSession*)p->data;
+	ESocketSession* session = (ESocketSession*)p->data;
 
-	sp<NIoBuffer> response(NIoBuffer::allocate(256)->setAutoExpand(true));
+	sp<EIoBuffer> response(EIoBuffer::allocate(256)->setAutoExpand(true));
 	#define TEST_HTTP_DATA "HTTP/1.1 200 OK\r\nContent-Length: 3\r\n\r\nOK!"
 	response->putString(TEST_HTTP_DATA);
 	response->flip();
@@ -96,16 +97,16 @@ static http_parser_settings settings = {
 	.on_body = on_body
 };
 
-static void onConnection(NSocketSession* session) {
+static void onConnection(ESocketSession* session, ESocketAcceptor::Service* service) {
 	LOG("onConnection...");
 
 	struct http_parser parser;
 	http_parser_init(&parser, HTTP_REQUEST);
 
-	sp<NIoBuffer> request;
+	sp<EIoBuffer> request;
 	while(!session->getService()->isDisposed()) {
 		try {
-			request = dynamic_pointer_cast<NIoBuffer>(session->read());
+			request = dynamic_pointer_cast<EIoBuffer>(session->read());
 		} catch (ESocketTimeoutException& e) {
 			LOG("session read timeout.");
 			continue;
@@ -132,14 +133,14 @@ static void onConnection(NSocketSession* session) {
 #endif
 
 static void test_echo_server() {
-	NSocketAcceptor sa;
-	NBlacklistFilter blf;
-	NWhitelistFilter wlf;
+	ESocketAcceptor sa;
+	EBlacklistFilter blf;
+	EWhitelistFilter wlf;
 	blf.block("localhost");
 //	sa.getFilterChainBuilder()->addFirst("black", &blf);
 	wlf.allow("localhost");
 //	sa.getFilterChainBuilder()->addFirst("white", &wlf);
-	NHttpCodecFilter hcf;
+	EHttpCodecFilter hcf;
 #if USE_HTTP_FILTER
 	sa.getFilterChainBuilder()->addLast("http", &hcf);
 #endif
@@ -147,13 +148,13 @@ static void test_echo_server() {
 	sa.setConnectionHandler(onConnection);
 //	sa.setMaxConnections(10);
 	sa.setSoTimeout(3000);
-	sa.setSessionIdleTime(NIdleStatus::WRITER_IDLE, 30);
-	sa.bind("0.0.0.0", 8887);
-//	sa.bind("localhost", 8889);
+	sa.setSessionIdleTime(EIdleStatus::WRITER_IDLE, 30);
+	sa.bind("0.0.0.0", 8887, false, "serviceA");
+	sa.bind("localhost", 8889, true, "serviceB");
 #if USE_SSL
 	sa.setSSLParameters(null,
-			SSL_FILE_PATH "./certs/tests-cert.pem",
-			SSL_FILE_PATH "./certs/tests-key.pem",
+			SSL_FILE_PATH "../test/certs/tests-cert.pem",
+			SSL_FILE_PATH "../test/certs/tests-key.pem",
 			null, null);
 #endif
 	sa.listen();

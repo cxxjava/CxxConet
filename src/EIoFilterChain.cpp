@@ -1,25 +1,25 @@
 /*
- * NIoFilterChain.cpp
+ * EIoFilterChain.cpp
  *
  *  Created on: 2017-3-16
  *      Author: cxxjava@163.com
  */
 
-#include "NIoFilterChain.hh"
-#include "NIoFilterAdapter.hh"
-#include "NIoBuffer.hh"
+#include "../inc/EIoFilterChain.hh"
+#include "../inc/EIoFilterAdapter.hh"
+#include "../inc/EIoBuffer.hh"
 
 namespace efc {
 namespace naf {
 
-class NIoFilterChain::EntryImpl: public NIoFilterChain::Entry {
+class EIoFilterChain::EntryImpl: public EIoFilterChain::Entry {
 public:
 	~EntryImpl() {
 		delete nextFilter;
 	}
 
 	EntryImpl(EntryImpl* prevEntry, EntryImpl* nextEntry, const char* name,
-			NIoFilter* filter, NIoFilterChain* difc) {
+			EIoFilter* filter, EIoFilterChain* difc) {
 		if (filter == null) {
 			throw EIllegalArgumentException(__FILE__, __LINE__, "filter");
 		}
@@ -34,63 +34,63 @@ public:
 		this->filter = filter;
 		this->owner = difc;
 
-		class _NextFilter: public NIoFilter::NextFilter {
+		class _NextFilter: public EIoFilter::NextFilter {
 		private:
 			EntryImpl* ei;
-			NIoFilterChain* ifc;
+			EIoFilterChain* ifc;
 		public:
-			_NextFilter(EntryImpl* e, NIoFilterChain* f): ei(e), ifc(f) {
+			_NextFilter(EntryImpl* e, EIoFilterChain* f): ei(e), ifc(f) {
 			}
 
 			virtual ~_NextFilter() {
 			}
 
-			virtual boolean sessionCreated(NIoSession* session) {
+			virtual boolean sessionCreated(EIoSession* session) {
 				Entry* nextEntry = ei->nextEntry;
 				return ifc->callNextSessionCreated(nextEntry, session);
 			}
 
-//			virtual void sessionOpened(NIoSession* session) {
+//			virtual void sessionOpened(EIoSession* session) {
 //				Entry* nextEntry = ei->nextEntry;
 //				ifc->callNextSessionOpened(nextEntry, session);
 //			}
 
-			virtual void sessionClosed(NIoSession* session) {
+			virtual void sessionClosed(EIoSession* session) {
 				Entry* nextEntry = ei->nextEntry;
 				ifc->callNextSessionClosed(nextEntry, session);
 			}
 
-//			virtual void sessionIdle(NIoSession* session, EIdleStatus status) {
+//			virtual void sessionIdle(EIoSession* session, EIdleStatus status) {
 //				Entry* nextEntry = ei->nextEntry;
 //				ifc->callNextSessionIdle(nextEntry, session, status);
 //			}
 //
-//			virtual void exceptionCaught(NIoSession* session, sp<EThrowableType>& cause) {
+//			virtual void exceptionCaught(EIoSession* session, sp<EThrowableType>& cause) {
 //				Entry* nextEntry = ei->nextEntry;
 //				ifc->callNextExceptionCaught(nextEntry, session, cause);
 //			}
 //
-//			virtual void inputClosed(NIoSession* session) {
+//			virtual void inputClosed(EIoSession* session) {
 //				Entry* nextEntry = ei->nextEntry;
 //				ifc->callNextInputClosed(nextEntry, session);
 //			}
 
-			virtual sp<EObject> messageReceived(NIoSession* session, sp<EObject> message) {
+			virtual sp<EObject> messageReceived(EIoSession* session, sp<EObject> message) {
 				Entry* nextEntry = ei->nextEntry;
 				return ifc->callNextMessageReceived(nextEntry, session, message);
 			}
 
-			sp<EObject> messageSend(NIoSession* session, sp<EObject> message) {
+			sp<EObject> messageSend(EIoSession* session, sp<EObject> message) {
 				Entry* nextEntry = ei->nextEntry;
 				return ifc->callNextMessageSend(nextEntry, session, message);
 			}
 
-//			virtual void filterWrite(NIoSession* session, sp<EWriteRequest>& writeRequest) {
+//			virtual void filterWrite(EIoSession* session, sp<EWriteRequest>& writeRequest) {
 //				Entry* nextEntry = ei->prevEntry;
 //				ifc->callPreviousFilterWrite(nextEntry, session, writeRequest);
 //			}
 //
-//			virtual void filterClose(NIoSession* session) {
+//			virtual void filterClose(EIoSession* session) {
 //				Entry* nextEntry = ei->prevEntry;
 //				ifc->callPreviousFilterClose(nextEntry, session);
 //			}
@@ -113,14 +113,14 @@ public:
 	/**
 	 * @return the filter.
 	 */
-	NIoFilter* getFilter() {
+	EIoFilter* getFilter() {
 		return filter;
 	}
 
 	/**
 	 * @return The {@link NextFilter} of the filter.
 	 */
-	NIoFilter::NextFilter* getNextFilter() {
+	EIoFilter::NextFilter* getNextFilter() {
 		return nextFilter;
 	}
 
@@ -130,7 +130,7 @@ public:
 	 * @param name The Filter's name
 	 * @param filter The added Filter
 	 */
-	void addBefore(const char* name, NIoFilter* filter) {
+	void addBefore(const char* name, EIoFilter* filter) {
 		owner->addBefore(getName(), name, filter);
 	}
 
@@ -140,7 +140,7 @@ public:
 	 * @param name The Filter's name
 	 * @param filter The added Filter
 	 */
-	void addAfter(const char* name, NIoFilter* filter) {
+	void addAfter(const char* name, EIoFilter* filter) {
 		owner->addAfter(getName(), name, filter);
 	}
 
@@ -149,7 +149,7 @@ public:
 	 *
 	 * @param newFilter The new filter that will be put in the chain
 	 */
-//	void replace(NIoFilter* newFilter) {
+//	void replace(EIoFilter* newFilter) {
 //
 //	}
 
@@ -197,12 +197,12 @@ public:
 	EntryImpl* prevEntry;
 	EntryImpl* nextEntry;
 	EString name;
-	NIoFilter* filter;
-	NIoFilter::NextFilter* nextFilter;
-	NIoFilterChain* owner;
+	EIoFilter* filter;
+	EIoFilter::NextFilter* nextFilter;
+	EIoFilterChain* owner;
 };
 
-NIoFilterChain::~NIoFilterChain() {
+EIoFilterChain::~EIoFilterChain() {
 	delete head->getFilter(); //!
 	delete head;
 	delete tail->getFilter(); //!
@@ -210,31 +210,31 @@ NIoFilterChain::~NIoFilterChain() {
 	delete name2entry;
 }
 
-NIoFilterChain::NIoFilterChain(NIoSession* session) {
+EIoFilterChain::EIoFilterChain(EIoSession* session) {
 	if (session == null) {
 		throw EIllegalArgumentException(__FILE__, __LINE__, "session");
 	}
 
 	this->session = session;
-	head = new EntryImpl(null, null, "head", new NIoFilterAdapter(), this);
-	tail = new EntryImpl(head, null, "tail", new NIoFilterAdapter(), this);
+	head = new EntryImpl(null, null, "head", new EIoFilterAdapter(), this);
+	tail = new EntryImpl(head, null, "tail", new EIoFilterAdapter(), this);
 	head->nextEntry = tail;
 
 	name2entry = new EHashMap<EString*, EntryImpl*>();
 }
 
-NIoSession* NIoFilterChain::getSession() {
+EIoSession* EIoFilterChain::getSession() {
 	return session;
 }
 
-NIoFilterChain::Entry* NIoFilterChain::getEntry(
+EIoFilterChain::Entry* EIoFilterChain::getEntry(
 		const char* name) {
 	EString ns(name);
 	return name2entry->get(&ns);
 }
 
-NIoFilterChain::Entry* NIoFilterChain::getEntry(
-		NIoFilter* filter) {
+EIoFilterChain::Entry* EIoFilterChain::getEntry(
+		EIoFilter* filter) {
 	EntryImpl* e = head->nextEntry;
 
 	while (e != tail) {
@@ -248,8 +248,8 @@ NIoFilterChain::Entry* NIoFilterChain::getEntry(
 	return null;
 }
 
-NIoFilter* NIoFilterChain::get(const char* name) {
-	NIoFilterChain::Entry* e = getEntry(name);
+EIoFilter* EIoFilterChain::get(const char* name) {
+	EIoFilterChain::Entry* e = getEntry(name);
 
 	if (e == null) {
 		return null;
@@ -258,16 +258,16 @@ NIoFilter* NIoFilterChain::get(const char* name) {
 	return e->getFilter();
 }
 
-boolean NIoFilterChain::contains(const char* name) {
+boolean EIoFilterChain::contains(const char* name) {
 	return getEntry(name) != null;
 }
 
-boolean NIoFilterChain::contains(NIoFilter* filter) {
+boolean EIoFilterChain::contains(EIoFilter* filter) {
 	return getEntry(filter) != null;
 }
 
-NIoFilter::NextFilter* NIoFilterChain::getNextFilter(const char* name) {
-	NIoFilterChain::Entry* e = getEntry(name);
+EIoFilter::NextFilter* EIoFilterChain::getNextFilter(const char* name) {
+	EIoFilterChain::Entry* e = getEntry(name);
 
 	if (e == null) {
 		return null;
@@ -276,47 +276,47 @@ NIoFilter::NextFilter* NIoFilterChain::getNextFilter(const char* name) {
 	return e->getNextFilter();
 }
 
-NIoFilter::NextFilter* NIoFilterChain::getNextFilter(NIoFilter* filter) {
-	NIoFilterChain::Entry* e = getEntry(filter);
+EIoFilter::NextFilter* EIoFilterChain::getNextFilter(EIoFilter* filter) {
+	EIoFilterChain::Entry* e = getEntry(filter);
 	if (e == null) {
 		return null;
 	}
 	return e->getNextFilter();
 }
 
-void NIoFilterChain::addFirst(const char* name, NIoFilter* filter) {
+void EIoFilterChain::addFirst(const char* name, EIoFilter* filter) {
 	checkAddable(name);
 	register_(head, name, filter);
 }
 
-void NIoFilterChain::addLast(const char* name, NIoFilter* filter) {
+void EIoFilterChain::addLast(const char* name, EIoFilter* filter) {
 	checkAddable(name);
 	register_(tail->prevEntry, name, filter);
 }
 
-void NIoFilterChain::addBefore(const char* baseName, const char* name,
-		NIoFilter* filter) {
+void EIoFilterChain::addBefore(const char* baseName, const char* name,
+		EIoFilter* filter) {
 	EntryImpl* baseEntry = checkOldName(baseName);
 	checkAddable(name);
 	register_(baseEntry->prevEntry, name, filter);
 }
 
-void NIoFilterChain::addAfter(const char* baseName, const char* name,
-		NIoFilter* filter) {
+void EIoFilterChain::addAfter(const char* baseName, const char* name,
+		EIoFilter* filter) {
 	EntryImpl* baseEntry = checkOldName(baseName);
 	checkAddable(name);
 	register_(baseEntry, name, filter);
 }
 
-NIoFilter* NIoFilterChain::remove(const char* name) {
+EIoFilter* EIoFilterChain::remove(const char* name) {
 	EntryImpl* entry = checkOldName(name);
 	deregister(entry);
-	NIoFilter* filter = entry->getFilter();
+	EIoFilter* filter = entry->getFilter();
 	delete entry; //!
 	return filter;
 }
 
-NIoFilter* NIoFilterChain::remove(NIoFilter* filter) {
+EIoFilter* EIoFilterChain::remove(EIoFilter* filter) {
 	EntryImpl* e = head->nextEntry;
 
 	while (e != tail) {
@@ -335,7 +335,7 @@ NIoFilter* NIoFilterChain::remove(NIoFilter* filter) {
 	throw EIllegalArgumentException(__FILE__, __LINE__, msg.c_str());
 }
 
-void NIoFilterChain::clear() {
+void EIoFilterChain::clear() {
 	sp<EIterator<EMapEntry<EString*, EntryImpl*>*> > iter = name2entry->entrySet()->iterator();
 	while (iter->hasNext()) {
 		EMapEntry<EString*, EntryImpl*>* entry = iter->next();
@@ -345,7 +345,7 @@ void NIoFilterChain::clear() {
 	}
 }
 
-EStringBase NIoFilterChain::toString() {
+EStringBase EIoFilterChain::toString() {
 	EStringBase buf("{ ");
 
 	boolean empty = true;
@@ -377,7 +377,7 @@ EStringBase NIoFilterChain::toString() {
 	return buf;
 }
 
-void NIoFilterChain::checkAddable(const char* name) {
+void EIoFilterChain::checkAddable(const char* name) {
     EString ns(name);
 	if (name2entry->containsKey(&ns)) {
 		EString msg("Other filter is using the same name '");
@@ -387,7 +387,7 @@ void NIoFilterChain::checkAddable(const char* name) {
 	}
 }
 
-void NIoFilterChain::register_(EntryImpl* prevEntry, const char* name, NIoFilter* filter) {
+void EIoFilterChain::register_(EntryImpl* prevEntry, const char* name, EIoFilter* filter) {
 	EntryImpl* newEntry = new EntryImpl(prevEntry, prevEntry->nextEntry, name, filter, this);
 
 //	try {
@@ -401,7 +401,7 @@ void NIoFilterChain::register_(EntryImpl* prevEntry, const char* name, NIoFilter
 //		msg += filter->toString();
 //		msg += " in ";
 //		msg += getSession()->toString();
-//		throw NIoFilterLifeCycleException(__FILE__, __LINE__, msg.c_str());
+//		throw EIoFilterLifeCycleException(__FILE__, __LINE__, msg.c_str());
 //	}
 
 	prevEntry->nextEntry->prevEntry = newEntry;
@@ -420,11 +420,11 @@ void NIoFilterChain::register_(EntryImpl* prevEntry, const char* name, NIoFilter
 //		msg += filter->toString();
 //		msg += " in ";
 //		msg += getSession()->toString();
-//		throw NIoFilterLifeCycleException(__FILE__, __LINE__, msg.c_str());
+//		throw EIoFilterLifeCycleException(__FILE__, __LINE__, msg.c_str());
 //	}
 }
 
-void NIoFilterChain::deregister(EntryImpl* entry) {
+void EIoFilterChain::deregister(EntryImpl* entry) {
 	EntryImpl* prevEntry = entry->prevEntry;
 	EntryImpl* nextEntry = entry->nextEntry;
 	prevEntry->nextEntry = nextEntry;
@@ -434,7 +434,7 @@ void NIoFilterChain::deregister(EntryImpl* entry) {
 	name2entry->remove(&ns); //delay to free the entry!
 }
 
-NIoFilterChain::EntryImpl* NIoFilterChain::checkOldName(const char* baseName) {
+EIoFilterChain::EntryImpl* EIoFilterChain::checkOldName(const char* baseName) {
 	EString ns(baseName);
 	EntryImpl* e = dynamic_cast<EntryImpl*>(name2entry->get(&ns));
 
@@ -447,31 +447,31 @@ NIoFilterChain::EntryImpl* NIoFilterChain::checkOldName(const char* baseName) {
 	return e;
 }
 
-boolean NIoFilterChain::fireSessionCreated() {
+boolean EIoFilterChain::fireSessionCreated() {
 	return callNextSessionCreated(head, session);
 }
 
-boolean NIoFilterChain::callNextSessionCreated(NIoFilterChain::Entry* entry, NIoSession* session) {
+boolean EIoFilterChain::callNextSessionCreated(EIoFilterChain::Entry* entry, EIoSession* session) {
 	if (!entry) return true;
-	NIoFilter* filter = entry->getFilter();
-	NIoFilter::NextFilter* nextFilter = entry->getNextFilter();
+	EIoFilter* filter = entry->getFilter();
+	EIoFilter::NextFilter* nextFilter = entry->getNextFilter();
 	return filter->sessionCreated(nextFilter, session);
 }
 
-void NIoFilterChain::fireSessionClosed() {
+void EIoFilterChain::fireSessionClosed() {
 	callNextSessionClosed(head, session);
 }
 
-void NIoFilterChain::callNextSessionClosed(Entry* entry, NIoSession* session) {
+void EIoFilterChain::callNextSessionClosed(Entry* entry, EIoSession* session) {
 	if (!entry) return;
-	NIoFilter* filter = entry->getFilter();
-	NIoFilter::NextFilter* nextFilter = entry->getNextFilter();
+	EIoFilter* filter = entry->getFilter();
+	EIoFilter::NextFilter* nextFilter = entry->getNextFilter();
 	filter->sessionClosed(nextFilter, session);
 }
 
-sp<EObject> NIoFilterChain::fireMessageReceived(sp<EObject> message) {
+sp<EObject> EIoFilterChain::fireMessageReceived(sp<EObject> message) {
 	llong currTime = 0;
-	NIoBuffer* buf = dynamic_cast<NIoBuffer*>(message.get());
+	EIoBuffer* buf = dynamic_cast<EIoBuffer*>(message.get());
 	if (buf) {
 		if (currTime == 0) currTime = ESystem::currentTimeMillis();
 		session->increaseReadBytes(buf->remaining(), currTime);
@@ -484,18 +484,18 @@ sp<EObject> NIoFilterChain::fireMessageReceived(sp<EObject> message) {
 	return callNextMessageReceived(head, session, message);
 }
 
-sp<EObject> NIoFilterChain::callNextMessageReceived(Entry* entry, NIoSession* session, sp<EObject> message) {
+sp<EObject> EIoFilterChain::callNextMessageReceived(Entry* entry, EIoSession* session, sp<EObject> message) {
 	if (!entry) return message;
-	NIoFilter* filter = entry->getFilter();
-	NIoFilter::NextFilter* nextFilter = entry->getNextFilter();
+	EIoFilter* filter = entry->getFilter();
+	EIoFilter::NextFilter* nextFilter = entry->getNextFilter();
 	return filter->messageReceived(nextFilter, session, message);
 }
 
-sp<EObject> NIoFilterChain::fireMessageSend(sp<EObject> message) {
+sp<EObject> EIoFilterChain::fireMessageSend(sp<EObject> message) {
 	sp<EObject> o = callNextMessageSend(head, session, message);
 
 	llong currTime = 0;
-	NIoBuffer* buf = dynamic_cast<NIoBuffer*>(o.get());
+	EIoBuffer* buf = dynamic_cast<EIoBuffer*>(o.get());
 	if (buf) {
 		if (currTime == 0) currTime = ESystem::currentTimeMillis();
 		session->increaseWrittenBytes(buf->remaining(), currTime);
@@ -516,10 +516,10 @@ sp<EObject> NIoFilterChain::fireMessageSend(sp<EObject> message) {
 	return o;
 }
 
-sp<EObject> NIoFilterChain::callNextMessageSend(Entry* entry, NIoSession* session, sp<EObject> message) {
+sp<EObject> EIoFilterChain::callNextMessageSend(Entry* entry, EIoSession* session, sp<EObject> message) {
 	if (!entry) return message;
-	NIoFilter* filter = entry->getFilter();
-	NIoFilter::NextFilter* nextFilter = entry->getNextFilter();
+	EIoFilter* filter = entry->getFilter();
+	EIoFilter::NextFilter* nextFilter = entry->getNextFilter();
 	return filter->messageSend(nextFilter, session, message);
 }
 

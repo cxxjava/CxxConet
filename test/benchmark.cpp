@@ -1,14 +1,14 @@
-#include "main.hh"
+#include "es_main.h"
 #include "ENaf.hh"
 
 #define LOG(fmt,...) //ESystem::out->println(fmt, ##__VA_ARGS__)
 
-static void onConnection(NSocketSession* session) {
-	LOG("onConnection...");
+static void onConnection(ESocketSession* session, ESocketAcceptor::Service* service) {
+	LOG("onConnection: service=%s", service->toString().c_str());
 
-	sp<NIoBuffer> request;
+	sp<EIoBuffer> request;
 	try {
-		request = dynamic_pointer_cast<NIoBuffer>(session->read());
+		request = dynamic_pointer_cast<EIoBuffer>(session->read());
 	} catch (ESocketTimeoutException& e) {
 		LOG("session read timeout.");
 		return;
@@ -24,7 +24,7 @@ static void onConnection(NSocketSession* session) {
 	// echo.
 	#define TEST_HTTP_DATA "HTTP/1.1 200 OK\r\nContent-Length: 3\r\n\r\nOK!"
 	int len = strlen(TEST_HTTP_DATA);
-	sp<NIoBuffer> respone = NIoBuffer::allocate(len);
+	sp<EIoBuffer> respone = EIoBuffer::allocate(len);
 	respone->put(TEST_HTTP_DATA, len);
 	respone->flip();
 	session->write(respone);
@@ -33,10 +33,10 @@ static void onConnection(NSocketSession* session) {
 }
 
 static void test_echo_performance() {
-	NSocketAcceptor sa;
+	ESocketAcceptor sa;
 	sa.setConnectionHandler(onConnection);
 	sa.setSoTimeout(3000);
-	sa.setSessionIdleTime(NIdleStatus::WRITER_IDLE, 30);
+	sa.setSessionIdleTime(EIdleStatus::WRITER_IDLE, 30);
 	sa.bind("0.0.0.0", 8888);
 	sa.listen();
 }

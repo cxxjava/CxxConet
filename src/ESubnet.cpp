@@ -1,22 +1,22 @@
 /*
- * NSubnet.cpp
+ * ESubnet.cpp
  *
  *  Created on: 2016-5-7
  *      Author: cxxjava@163.com
  */
 
-#include "NSubnet.hh"
+#include "../inc/ESubnet.hh"
 
 namespace efc {
 namespace naf {
 
 // Warning: Now only support IPV4 address.
 
-NSubnet::~NSubnet() {
+ESubnet::~ESubnet() {
 
 }
 
-NSubnet::NSubnet(EInetAddress* subnet, int mask) {
+ESubnet::ESubnet(EInetAddress* subnet, int mask) {
 	/* @see:
 	if (subnet == null) {
 		throw new IllegalArgumentException("Subnet address can not be null");
@@ -70,7 +70,7 @@ NSubnet::NSubnet(EInetAddress* subnet, int mask) {
 	}
 }
 
-boolean NSubnet::inSubnet(EInetAddress* address) {
+boolean ESubnet::inSubnet(EInetAddress* address) {
 	/* @see:
 	if (address.isAnyLocalAddress()) {
 		return true;
@@ -92,17 +92,17 @@ boolean NSubnet::inSubnet(EInetAddress* address) {
 	return (int) toSubnet(address) == subnetInt;
 }
 
-EStringBase NSubnet::toString() {
+EStringBase ESubnet::toString() {
 	return subnet.getHostAddress() + "/" + suffix;
 }
 
-boolean NSubnet::equals(NSubnet* other) {
+boolean ESubnet::equals(ESubnet* other) {
 	if (!other) return false;
 
 	return other->subnetInt == subnetInt && other->suffix == suffix;
 }
 
-int NSubnet::toInt(EInetAddress* inetAddress) {
+int ESubnet::toInt(EInetAddress* inetAddress) {
 	/* @see:
 	byte[] address = inetAddress.getAddress();
 	int result = 0;
@@ -117,11 +117,11 @@ int NSubnet::toInt(EInetAddress* inetAddress) {
 	return inetAddress->getAddress();
 }
 
-long NSubnet::toLong(EInetAddress* inetAddress) {
+long ESubnet::toLong(EInetAddress* inetAddress) {
 	return inetAddress->getAddress();
 }
 
-long NSubnet::toSubnet(EInetAddress* address) {
+long ESubnet::toSubnet(EInetAddress* address) {
 	/* @see:
 	if (address instanceof Inet4Address) {
 		return toInt(address) & (int) subnetMask;

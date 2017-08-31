@@ -1,12 +1,12 @@
 /*
- * NSubnet.hh
+ * ESubnet.hh
  *
  *  Created on: 2016-5-7
  *      Author: cxxjava@163.com
  */
 
-#ifndef NSUBNET_HH_
-#define NSUBNET_HH_
+#ifndef ESUBNET_HH_
+#define ESUBNET_HH_
 
 #include "EInetAddress.hh"
 
@@ -19,9 +19,9 @@ namespace naf {
  *
  */
 
-class NSubnet: public EObject {
+class ESubnet: public EObject {
 public:
-	virtual ~NSubnet();
+	virtual ~ESubnet();
 
 	/**
 	 * Creates a subnet from CIDR notation. For example, the subnet
@@ -30,7 +30,7 @@ public:
 	 * @param subnet The {@link InetAddress} of the subnet
 	 * @param mask The mask
 	 */
-	NSubnet(EInetAddress* subnet, int mask);
+	ESubnet(EInetAddress* subnet, int mask);
 
 	/**
 	 * Checks if the {@link InetAddress} is within this subnet
@@ -47,7 +47,7 @@ public:
 	/**
 	 * {@inheritDoc}
 	 */
-	virtual boolean equals(NSubnet* obj);
+	virtual boolean equals(ESubnet* obj);
 
 private:
 	static const int IP_MASK_V4 = 0x80000000;
@@ -90,4 +90,4 @@ private:
 
 } /* namespace naf */
 } /* namespace efc */
-#endif /* NSUBNET_HH_ */
+#endif /* ESUBNET_HH_ */

@@ -53,13 +53,13 @@
   
   static sp<ELogger> logger = ELoggerManager::getLogger("testnaf");
 
-  static void onListening(NSocketAcceptor* acceptor) {
+  static void onListening(ESocketAcceptor* acceptor) {
     logger->trace("onListening...");
 
     while (!acceptor->isDisposed()) {
       sleep(10);
 
-      NIoServiceStatistics* ss = acceptor->getStatistics();
+      EIoServiceStatistics* ss = acceptor->getStatistics();
       logger->trace_("ReadBytes=%ld", ss->getReadBytes());
       logger->trace_("WrittenBytes=%ld", ss->getWrittenBytes());
     }
@@ -67,13 +67,13 @@
     logger->trace("Out of Listening.");
   }
 
-  static void onConnection(NSocketSession* session) {
+  static void onConnection(ESocketSession* session) {
     logger->trace("onConnection...");
 
-    sp<NIoBuffer> request;
+    sp<EIoBuffer> request;
     while(!session->getService()->isDisposed()) {
       try {
-        request = dynamic_pointer_cast<NIoBuffer>(session->read());
+        request = dynamic_pointer_cast<EIoBuffer>(session->read());
       } catch (ESocketTimeoutException& e) {
         logger->trace("session read timeout.");
         continue;
@@ -99,15 +99,15 @@
     // CxxLog4j init.
     ELoggerManager::init("log4e.conf");
 
-    NSocketAcceptor sa;
-    NBlacklistFilter blf;
+    ESocketAcceptor sa;
+    EBlacklistFilter blf;
     blf.block("localhost");
     sa.getFilterChainBuilder()->addFirst("black", &blf);
     sa.setListeningHandler(onListening);
     sa.setConnectionHandler(onConnection);
     sa.setMaxConnections(1000000);
     sa.setSoTimeout(3000);
-    sa.setSessionIdleTime(NIdleStatus::WRITER_IDLE, 30);
+    sa.setSessionIdleTime(EIdleStatus::WRITER_IDLE, 30);
     sa.bind("0.0.0.0", 8888);
     sa.listen();
 

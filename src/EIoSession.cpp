@@ -1,24 +1,24 @@
 /*
- * NIoSession.cpp
+ * EIoSession.cpp
  *
  *  Created on: 2017-3-16
  *      Author: cxxjava@163.com
  */
 
-#include "NIoSession.hh"
-#include "NIoService.hh"
-#include "NIoFilterChainBuilder.hh"
+#include "../inc/EIoSession.hh"
+#include "../inc/EIoService.hh"
+#include "../inc/EIoFilterChainBuilder.hh"
 
 namespace efc {
 namespace naf {
 
-long NIoSession::idGenerator = 0;
+long EIoSession::idGenerator = 0;
 
-NIoSession::~NIoSession() {
+EIoSession::~EIoSession() {
 	delete filterChain;
 }
 
-NIoSession::NIoSession(NIoService* service):
+EIoSession::EIoSession(EIoService* service):
 		service(service),
 		creationTime(0),
 		lastReadTime(0),
@@ -36,42 +36,42 @@ NIoSession::NIoSession(NIoService* service):
 //	lastIdleTimeForRead = currentTime;
 //	lastIdleTimeForWrite = currentTime;
 
-	filterChain = new NIoFilterChain(this);
+	filterChain = new EIoFilterChain(this);
 
 	// Build the filter chain of this session.
-	NIoFilterChainBuilder* chainBuilder = getService()->getFilterChainBuilder();
+	EIoFilterChainBuilder* chainBuilder = getService()->getFilterChainBuilder();
 	chainBuilder->buildFilterChain(filterChain);
 }
 
-long NIoSession::getId() {
+long EIoSession::getId() {
 	return sessionId;
 }
 
-NIoService* NIoSession::getService() {
+EIoService* EIoSession::getService() {
 	return service;
 }
 
-NIoFilterChain* NIoSession::getFilterChain() {
+EIoFilterChain* EIoSession::getFilterChain() {
 	return filterChain;
 }
 
-llong NIoSession::getCreationTime() {
+llong EIoSession::getCreationTime() {
 	return creationTime;
 }
 
-llong NIoSession::getLastIoTime() {
+llong EIoSession::getLastIoTime() {
 	return ES_MAX(lastReadTime, lastWriteTime);
 }
 
-llong NIoSession::getLastReadTime() {
+llong EIoSession::getLastReadTime() {
 	return lastReadTime;
 }
 
-llong NIoSession::getLastWriteTime() {
+llong EIoSession::getLastWriteTime() {
 	return lastWriteTime;
 }
 
-void NIoSession::increaseReadBytes(long increment, llong currentTime) {
+void EIoSession::increaseReadBytes(long increment, llong currentTime) {
 	if (increment <= 0) {
 		return;
 	}
@@ -82,14 +82,14 @@ void NIoSession::increaseReadBytes(long increment, llong currentTime) {
 	service->getStatistics()->increaseReadBytes(increment, currentTime);
 }
 
-void NIoSession::increaseReadMessages(llong currentTime) {
+void EIoSession::increaseReadMessages(llong currentTime) {
 	readMessages++;
 	lastReadTime = currentTime;
 
 	service->getStatistics()->increaseReadMessages(currentTime);
 }
 
-void NIoSession::increaseWrittenBytes(int increment, llong currentTime) {
+void EIoSession::increaseWrittenBytes(int increment, llong currentTime) {
 	if (increment <= 0) {
 		return;
 	}
@@ -100,11 +100,19 @@ void NIoSession::increaseWrittenBytes(int increment, llong currentTime) {
 	service->getStatistics()->increaseWrittenBytes(increment, currentTime);
 }
 
-void NIoSession::increaseWrittenMessages(llong currentTime) {
+void EIoSession::increaseWrittenMessages(llong currentTime) {
 	writtenMessages++;
 	lastWriteTime = currentTime;
 
 	service->getStatistics()->increaseWrittenMessages(currentTime);
+}
+
+void* EIoSession::attach(void* ob) {
+	return attachment_.getAndSet(ob);
+}
+
+void* EIoSession::attachment() {
+	return attachment_.get();
 }
 
 } /* namespace naf */

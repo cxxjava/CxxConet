@@ -1,21 +1,21 @@
 /*
- * NSocketAcceptor.hh
+ * ESocketAcceptor.hh
  *
  *  Created on: 2013-8-19
  *      Author: cxxjava@163.com
  */
 
-#ifndef NSOCKETACCEPTOR_HH_
-#define NSOCKETACCEPTOR_HH_
+#ifndef ESOCKETACCEPTOR_HH_
+#define ESOCKETACCEPTOR_HH_
 
-#include "NIoService.hh"
-#include "NSocketSession.hh"
-#include "NIoFilterChainBuilder.hh"
+#include "./EIoService.hh"
+#include "./ESocketSession.hh"
+#include "./EIoFilterChainBuilder.hh"
 
 namespace efc {
 namespace naf {
 
-class NManagedSession;
+class EManagedSession;
 
 /**
  * {@link IoAcceptor} for socket transport (TCP/IP).  This class
@@ -23,11 +23,26 @@ class NManagedSession;
  *
  */
 
-class NSocketAcceptor: virtual public NIoService {
+class ESocketAcceptor: virtual public EIoService {
 public:
-	virtual ~NSocketAcceptor();
+	class Service: public EObject {
+	public:
+		boolean sslActive;
+		EString serviceName;
+		EInetSocketAddress boundAddress;
+		virtual EStringBase toString() {
+			return boundAddress.toString() + ", ssl=" + sslActive + ", service=" + serviceName;
+		}
+	private:
+		friend class ESocketAcceptor;
+		Service(const char* name, boolean ssl, const char* hostname, int port): sslActive(ssl), serviceName(name), boundAddress(hostname, port) {}
+		Service(const char* name, boolean ssl, EInetSocketAddress* localAddress): sslActive(ssl), serviceName(name), boundAddress(*localAddress) {}
+	};
 
-	NSocketAcceptor();
+public:
+	virtual ~ESocketAcceptor();
+
+	ESocketAcceptor();
 
 	/**
 	 * SSL support.
@@ -90,12 +105,12 @@ public:
 	/**
 	 *
 	 */
-	virtual void setSessionIdleTime(NIdleStatus status, int seconds);
+	virtual void setSessionIdleTime(EIdleStatus status, int seconds);
 
 	/**
 	 *
 	 */
-	virtual int getSessionIdleTime(NIdleStatus status);
+	virtual int getSessionIdleTime(EIdleStatus status);
 
 	/**
 	 *
@@ -110,31 +125,31 @@ public:
 	/**
 	 *
 	 */
-	virtual NIoFilterChainBuilder* getFilterChainBuilder();
+	virtual EIoFilterChainBuilder* getFilterChainBuilder();
 
 	/**
 	 *
 	 */
-	virtual NIoServiceStatistics* getStatistics();
+	virtual EIoServiceStatistics* getStatistics();
 
 	/**
 	 *
 	 */
-	virtual void setListeningHandler(std::function<void(NSocketAcceptor* acceptor)> handler);
+	virtual void setListeningHandler(std::function<void(ESocketAcceptor* acceptor)> handler);
 
 	/**
 	 *
 	 */
-	virtual void setConnectionHandler(std::function<void(NSocketSession* session)> handler);
+	virtual void setConnectionHandler(std::function<void(ESocketSession* session, Service* service)> handler);
 
 	/**
 	 * Binds the <code>ServerSocket</code> to a specific address
      * (IP address and port number).
 	 */
-	virtual void bind(int port) THROWS(EIOException);
-	virtual void bind(const char* hostname, int port) THROWS(EIOException);
-	virtual void bind(EInetSocketAddress *localAddress) THROWS(EIOException);
-	virtual void bind(EIterable<EInetSocketAddress*> *localAddresses) THROWS(EIOException);
+	virtual void bind(int port, boolean ssl=false, const char* name=null) THROWS(EIOException);
+	virtual void bind(const char* hostname, int port, boolean ssl=false, const char* name=null) THROWS(EIOException);
+	virtual void bind(EInetSocketAddress *localAddress, boolean ssl=false, const char* name=null) THROWS(EIOException);
+	virtual void bind(EIterable<EInetSocketAddress*> *localAddresses, boolean ssl=false, const char* name=null) THROWS(EIOException);
 
 	/**
 	 * Listens for connections and loop run for network io events.
@@ -164,28 +179,29 @@ private:
 	} SSL;
 	sp<SSL> ssl_;
 
+	EHashSet<Service*> Services_;
+
 	boolean disposing_;// = false;
 	boolean reuseAddress_;// = false;
 	int backlog_;
 	int timeout_;
 	int bufsize_;
-	EHashSet<EInetSocketAddress*> boundAddresses_;
 	EAtomicCounter maxConns_;// = -1;
 	EAtomicCounter connections_;
 	EAtomicCounter idleTimeForRead_;
 	EAtomicCounter idleTimeForWrite_;
 
 	int workThreads_;
-	NManagedSession* managedSessions_;
+	EManagedSession* managedSessions_;
 
-	NIoFilterChainBuilder defaultFilterChain;
+	EIoFilterChainBuilder defaultFilterChain;
 
-	NIoServiceStatistics stats_;
+	EIoServiceStatistics stats_;
 
-	std::function<void(NSocketAcceptor* acceptor)> listeningCallback_;
-	std::function<void(NSocketSession* session)> connectionCallback_;
+	std::function<void(ESocketAcceptor* acceptor)> listeningCallback_;
+	std::function<void(ESocketSession* session, Service* service)> connectionCallback_;
 
-	void startAccept(EFiberScheduler& scheduler, EInetSocketAddress& socketAddress) THROWS(EIOException);
+	void startAccept(EFiberScheduler& scheduler, Service* service) THROWS(EIOException);
 	void startClean(EFiberScheduler& scheduler, int tag) THROWS(EIOException);
 	void startStatistics(EFiberScheduler& scheduler);
 };
@@ -193,4 +209,4 @@ private:
 } /* namespace naf */
 } /* namespace efc */
 
-#endif /* NSOCKETACCEPTOR_HH_ */
+#endif /* ESOCKETACCEPTOR_HH_ */
