@@ -1,23 +1,23 @@
 # CxxConet
 
-##基于协程的C++网络开发框架.
+## 基于协程的C++网络开发框架.
 
 ### 目录
-  - [特点](#特点)
-  - [协程模型](#协程模型)
-  - [通信流程](#通信流程)
-  - [示例](#示例)
-  - [性能](#性能)
-  - [依赖](#依赖)
-  - [Support](#support)
+- [特点](#特点)
+- [协程模型](#协程模型)
+- [通信流程](#通信流程)
+- [示例](#示例)
+- [性能](#性能)
+- [依赖](#依赖)
+- [Support](#support)
 
-####特点
+#### 特点
 * 跨平台：同时支持Linux32/64、OSX64两个平台，支持C++11及以上；
 * 易开发：同步的方式编写代码，支持类Mina的filter过滤链、简单而不失强大；
 * 高性能：可同时处理海量连接，框架无锁设计，性能超群；
 * 多特性：代码同步调用方式、支持网络过载保护、支持空闲连接自动清理等企业级特性；
 
-####协程模型
+#### 协程模型
    在整个CxxConet框架中，共有4种工作协程：  
 * Socket接入协程(socket acceptor)  
 * 全局指标统计协程(global statistics)  
@@ -36,7 +36,7 @@
 
 > Socket接入协程、全局指标统计协程、Socket清理协程共享同一个线程，I/O处理协程则位于其他独立线程。
 
-####通信流程
+#### 通信流程
 ![ioflow](img/ioflow.png)
 
 > IoAcceptor：这个接口在一个协程上负责套接字的建立；
@@ -45,7 +45,7 @@
 
 > ConnectionHandler：这个接口负责编写业务逻辑，也就是接收、发送数据的地方。
 
-####示例
+#### 示例
   `c++:`
 
   ```
@@ -121,7 +121,7 @@
 更多示例：  
 [testnaf.cpp](test/testnaf.cpp)  
 
-####性能
+#### 性能
 
 `测试程序:`
 
@@ -206,12 +206,11 @@ Percentage of the requests served within a certain time (ms)
  100%     17 (longest request)
 ```
 
-####依赖
+#### 依赖
 1. [CxxJDK](https://github.com/cxxjava/CxxJDK)
 2. [CxxFiber](https://github.com/cxxjava/CxxFiber)
 3. [CxxLog4j](https://github.com/cxxjava/CxxLog4j)
 
 
-####Support
+#### Support
 Email: [cxxjava@163.com](mailto:cxxjava@163.com)
-
