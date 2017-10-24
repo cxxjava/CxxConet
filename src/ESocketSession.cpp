@@ -71,9 +71,7 @@ boolean ESocketSession::write(sp<EObject> message) {
 
 	sp<EFile> file = dynamic_pointer_cast<EFile>(out);
 	if (file != null) {
-		ERandomAccessFile raf(file.get(), "r");
-		off_t offset = 0;
-		socket_->sendfile(eso_fileno(raf.getFD()), &offset, file->length());
+		socket_->sendfile(file.get());
 		return true;
 	}
 

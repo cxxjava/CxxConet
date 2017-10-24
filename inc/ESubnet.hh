@@ -8,7 +8,7 @@
 #ifndef ESUBNET_HH_
 #define ESUBNET_HH_
 
-#include "EInetAddress.hh"
+#include "Efc.hh"
 
 namespace efc {
 namespace naf {

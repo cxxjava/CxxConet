@@ -8,7 +8,7 @@
 #ifndef __ENAF_HH__
 #define __ENAF_HH__
 
-#define ENAF_VERSION "0.1.0"
+#define ENAF_VERSION "0.2.0"
 
 #include "Efc.hh"
 

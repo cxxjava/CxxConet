@@ -38,13 +38,13 @@ endif
 
 CCOMPILE = gcc
 CPPCOMPILE = g++
-INCLUDEDIR = -I../../CxxJDK/inc \
-	-I../../CxxJDK/inc/comm \
-	-I../../CxxJDK/inc/efc \
-	-I../../CxxJDK/inc/efc/concurrent \
-	-I../../CxxJDK/inc/efc/cpp11 \
-	-I../../CxxJDK/inc/efc/nio \
-	-I../../CxxJDK/inc/libc \
+INCLUDEDIR = \
+	-I../../efc \
+	-I../../eco \
+	-I../../eco/inc \
+	-I../../elog \
+	-I../../elog/inc \
+	-I../../CxxJDK/efc \
 	-I../../CxxFiber \
 	-I../../CxxFiber/inc \
 	-I../../CxxLog4j \
@@ -56,61 +56,13 @@ INCLUDEDIR = -I../../CxxJDK/inc \
 
 LINK = g++
 LINKOPTION = -std=$(CPPSTD) -g
-LIBDIRS = -L../../CxxJDK/lib/$(LIBDIR)
+LIBDIRS = -L../../efc/lib/$(LIBDIR) -L../../CxxJDK/lib/$(LIBDIR)
 APPENDLIB = 
 
-BASE_OBJS =  ../src/EBlacklistFilter.o \
-	../src/EIoBuffer.o \
-	../src/EIoFilterAdapter.o \
-	../src/EIoFilterChain.o \
-	../src/EIoFilterChainBuidler.o \
-	../src/EIoServiceStatistics.o \
-	../src/EIoSession.o \
-	../src/ESocketAcceptor.o \
-	../src/ESocketSession.o \
-	../src/ESubnet.o \
-	../src/EWhitelistFilter.o \
-	../filter/http/EHttpCodecFilter.o \
-	../filter/http/EHttpRequest.o \
-	../filter/http/EHttpResponse.o \
-	../../CxxFiber/src/EContext.o \
-	../../CxxFiber/src/EFiber.o \
-	../../CxxFiber/src/EFiberBlocker.o \
-	../../CxxFiber/src/EFiberCondition.o \
-	../../CxxFiber/src/EFiberDebugger.o \
-	../../CxxFiber/src/EFiberMutex.o \
-	../../CxxFiber/src/EFiberScheduler.o \
-	../../CxxFiber/src/EFiberTimer.o \
-	../../CxxFiber/src/EFileContext.o \
-	../../CxxFiber/src/EHooker.o \
-	../../CxxFiber/src/EIoWaiter.o \
-	../../CxxFiber/src/eco_ae.o \
-	../../CxxFiber/src/eco_ae_epoll.o \
-	../../CxxFiber/src/eco_ae_kqueue.o \
-	../../CxxLog4j/src/EAbstractAppender.o \
-	../../CxxLog4j/src/EAbstractLayout.o \
-	../../CxxLog4j/src/EAppenderFactory.o \
-	../../CxxLog4j/src/EConfiguration.o \
-	../../CxxLog4j/src/EConfigurator.o \
-	../../CxxLog4j/src/EConsoleAppender.o \
-	../../CxxLog4j/src/EDailyRollingFileAppender.o \
-	../../CxxLog4j/src/EFileAppender.o \
-	../../CxxLog4j/src/EFileLogWriter.o \
-	../../CxxLog4j/src/EHTMLLayout.o \
-	../../CxxLog4j/src/ELayoutFactory.o \
-	../../CxxLog4j/src/ELogEvent.o \
-	../../CxxLog4j/src/ELoggerConfig.o \
-	../../CxxLog4j/src/ELoggerImp.o \
-	../../CxxLog4j/src/ELoggerManager.o \
-	../../CxxLog4j/src/ELoggerManagerImp.o \
-	../../CxxLog4j/src/EMDC.o \
-	../../CxxLog4j/src/ENDC.o \
-	../../CxxLog4j/src/EOptionConverter.o \
-	../../CxxLog4j/src/EPatternLayout.o \
-	../../CxxLog4j/src/ERollingFileAppender.o \
-	../../CxxLog4j/src/ESimpleLayout.o \
-	../../CxxLog4j/src/ETTCCLayout.o \
-	../../CxxLog4j/src/ETransform.o \
+BASE_SRC += $(sort $(wildcard ../src/*.cpp ../filter/http/*.cpp))
+BASE_SRC += $(sort $(wildcard ../../eco/src/*.cpp ../../eco/src/*.c  ../../CxxFiber/src/*.cpp ../../CxxFiber/src/*.c))
+BASE_SRC += $(sort $(wildcard ../../elog/src/*.cpp ./../CxxLog4j/src/*.cpp))
+BASE_OBJS   += $(patsubst %.cpp,%.o, $(patsubst %.c,%.o, $(BASE_SRC)))
 
 TESTNAF_OBJS = testnaf.o http_parser.o \
 
