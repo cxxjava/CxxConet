@@ -31,7 +31,7 @@ sp<EObject> EIoFilterAdapter::messageSend(EIoFilter::NextFilter* nextFilter,
 	return nextFilter->messageSend(session, message);
 }
 
-EStringBase EIoFilterAdapter::toString() {
+EString EIoFilterAdapter::toString() {
 	return "EIoFilterAdapter";
 }
 

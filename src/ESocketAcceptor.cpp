@@ -1,7 +1,7 @@
 /*
  * ESocketAcceptor.cpp
  *
- *  Created on: 2017年3月16日
+ *  Created on: 2017-3-16
  *      Author: cxxjava@163.com
  */
 
@@ -20,7 +20,7 @@ ESocketAcceptor::~ESocketAcceptor() {
 }
 
 ESocketAcceptor::ESocketAcceptor() :
-		disposing_(false),
+		status_(INITED),
 		reuseAddress_(false),
 		backlog_(SOCKET_BACKLOG_MIN),
 		timeout_(0),
@@ -156,8 +156,6 @@ void ESocketAcceptor::bind(EIterable<EInetSocketAddress*>* localAddresses, boole
 
 void ESocketAcceptor::listen() {
 	try {
-		EFiberScheduler scheduler;
-
 		// fibers balance
 		scheduler.setBalanceCallback([](EFiber* fiber, int threadNums){
 			long tag = fiber->getTag();
@@ -170,6 +168,8 @@ void ESocketAcceptor::listen() {
 				return fid % (threadNums - 1) + 1; // balance to other's threads.
 			}
 		});
+
+		status_ = RUNNING;
 
 		// create client socket work-thread's leader fiber for clean idle socket.
 		for (int i=1; i<workThreads_; i++) {
@@ -201,11 +201,42 @@ void ESocketAcceptor::listen() {
 }
 
 void ESocketAcceptor::dispose() {
-	disposing_ = true;
+	// set dispose flag
+	status_ = DISPOSED;
+
+	// fibier interrupt
+	scheduler.interrupt();
+
+	// accept notify
+	sp<EIterator<Service*> > iter = Services_.iterator();
+	while (iter->hasNext()) {
+		Service* sv = iter->next();
+		if (sv->ss != null) {
+			//FIXME: http://bbs.chinaunix.net/forum.php?mod=viewthread&action=printable&tid=1844321
+			//sv->ss->close();
+			ESocket s("127.0.0.1", sv->ss->getLocalPort());
+		}
+	}
+}
+
+void ESocketAcceptor::shutdown() {
+	// set dispose flag
+	status_ = DISPOSING;
+
+	// accept notify
+	sp<EIterator<Service*> > iter = Services_.iterator();
+	while (iter->hasNext()) {
+		Service* sv = iter->next();
+		if (sv->ss != null) {
+			//FIXME: http://bbs.chinaunix.net/forum.php?mod=viewthread&action=printable&tid=1844321
+			//sv->ss->close();
+			ESocket s("127.0.0.1", sv->ss->getLocalPort());
+		}
+	}
 }
 
 boolean ESocketAcceptor::isDisposed() {
-	return disposing_;
+	return status_ == DISPOSED;
 }
 
 //=============================================================================
@@ -214,7 +245,6 @@ void ESocketAcceptor::startAccept(EFiberScheduler& scheduler, Service* service) 
 	EInetSocketAddress& socketAddress = service->boundAddress;
 
 	sp<EFiber> acceptFiber = scheduler.schedule([&,service,this](){
-		sp<EServerSocket> ss;
 		if (ssl_ != null && service->sslActive) {
 			ESSLServerSocket* sss = new ESSLServerSocket();
 			boolean r = sss->setSSLParameters(ssl_->dh_file.c_str(),
@@ -225,30 +255,30 @@ void ESocketAcceptor::startAccept(EFiberScheduler& scheduler, Service* service) 
 			if (!r) {
 				throw EIOException(__FILE__, __LINE__, "SSL error.");
 			}
-			ss = sss;
+			service->ss = sss;
 		} else {
-			ss = new EServerSocket();
+			service->ss = new EServerSocket();
 		}
-		ss->setReuseAddress(reuseAddress_);
+		service->ss->setReuseAddress(reuseAddress_);
 		if (timeout_ > 0) {
-			ss->setSoTimeout(timeout_);
+			service->ss->setSoTimeout(timeout_);
 		}
 		if (bufsize_ > 0) {
-			ss->setReceiveBufferSize(bufsize_);
+			service->ss->setReceiveBufferSize(bufsize_);
 		}
-		ss->bind(&socketAddress, backlog_);
+		service->ss->bind(&socketAddress, backlog_);
 
-		while (!disposing_) {
+		while (status_ == RUNNING) {
 			try {
 				// accept
-				sp<ESocket> socket = ss->accept();
+				sp<ESocket> socket = service->ss->accept();
 				if (socket != null) {
 					try {
 						sp<ESocketSession> session(new ESocketSession(this, socket));
 
 						// reach the max connections.
 						int maxconns = maxConns_.value();
-						if (disposing_ || (maxconns > 0 && connections_.value() >= maxconns)) {
+						if ((status_ >= DISPOSING) || (maxconns > 0 && connections_.value() >= maxconns)) {
 							socket->close();
 							EThread::yield(); //?
 							continue;
@@ -300,12 +330,19 @@ void ESocketAcceptor::startAccept(EFiberScheduler& scheduler, Service* service) 
 						logger->error__(__FILE__, __LINE__, "error");
 					}
 				}
+			} catch (EInterruptedException& e) {
+				logger->info__(__FILE__, __LINE__, "interrupted");
+				break;
 			} catch (ESocketTimeoutException& e) {
 				// nothing to do.
 			} catch (EThrowable& t) {
 				logger->error__(__FILE__, __LINE__, t.toString().c_str());
+				break;
 			}
 		}
+
+		logger->info__(__FILE__, __LINE__, "accept closed.");
+		service->ss->close();
 	});
 	acceptFiber->setTag(0); //tag: 0
 }
@@ -317,8 +354,8 @@ void ESocketAcceptor::startClean(EFiberScheduler& scheduler, int tag) {
 		try {
 			EHashMap<int, EIoSession*>* threadManagedSessions = managedSessions_->getCurrentThreadManagedSessions();
 
-			while (!disposing_) {
-				int maxsecs = EInteger::MAX_VALUE; // sleep for 1s-10s second.
+			while (status_ == RUNNING || (status_ == DISPOSING && connections_.value() > 0)) {
+				int maxsecs = 3; // sleep for 1s-10s second.
 				int idleread = idleTimeForRead_.value();
 				int idlewrite = idleTimeForWrite_.value();
 				int status = 0;
@@ -330,7 +367,7 @@ void ESocketAcceptor::startClean(EFiberScheduler& scheduler, int tag) {
 					status |= WRITER_IDLE;
 					maxsecs = ES_MIN(idlewrite, maxsecs);
 				}
-				int seconds = ES_MAX(maxsecs/2, 1);
+				int seconds = ES_MAX(maxsecs, 1);
 
 				sleep(seconds); //!
 
@@ -353,6 +390,8 @@ void ESocketAcceptor::startClean(EFiberScheduler& scheduler, int tag) {
 					}
 				}
 			}
+		} catch (EInterruptedException& e) {
+			logger->info__(__FILE__, __LINE__, "interrupted");
 		} catch (EThrowable& t) {
 			logger->error__(__FILE__, __LINE__, t.toString().c_str());
 		}
@@ -366,7 +405,7 @@ void ESocketAcceptor::startStatistics(EFiberScheduler& scheduler) {
 			llong currentTime = ESystem::currentTimeMillis();
 			int count = 0;
 
-			while (!disposing_) {
+			while (status_ == RUNNING || (status_ == DISPOSING && connections_.value() > 0)) {
 				int seconds = this->getStatistics()->getThroughputCalculationInterval();
 
 				sleep(seconds); //!
@@ -380,6 +419,8 @@ void ESocketAcceptor::startStatistics(EFiberScheduler& scheduler) {
 
 				this->getStatistics()->updateThroughput(currentTime);
 			}
+		} catch (EInterruptedException& e) {
+			logger->info__(__FILE__, __LINE__, "interrupted");
 		} catch (EThrowable& t) {
 			logger->error__(__FILE__, __LINE__, t.toString().c_str());
 		}

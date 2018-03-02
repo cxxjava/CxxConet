@@ -107,11 +107,11 @@ void EIoSession::increaseWrittenMessages(llong currentTime) {
 	service->getStatistics()->increaseWrittenMessages(currentTime);
 }
 
-void* EIoSession::attach(void* ob) {
+EObject* EIoSession::attach(EObject* ob) {
 	return attachment_.getAndSet(ob);
 }
 
-void* EIoSession::attachment() {
+EObject* EIoSession::attachment() {
 	return attachment_.get();
 }
 

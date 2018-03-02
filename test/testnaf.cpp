@@ -3,13 +3,15 @@
 #include "./http_parser.h"
 #include "./http_parser.c"
 
-#define LOG(fmt,...) ESystem::out->println(fmt, ##__VA_ARGS__)
+#define LOG(fmt,...) ESystem::out->printfln(fmt, ##__VA_ARGS__)
 
 #define USE_SSL 1
 #define SSL_FILE_PATH ""
 
 #define USE_HTTP_FILTER 1
 #define PRINT_STATISTICS 0
+
+static ESocketAcceptor g_sa;
 
 static void onListening(ESocketAcceptor* acceptor) {
 	LOG("onListening...");
@@ -133,35 +135,42 @@ static void onConnection(ESocketSession* session, ESocketAcceptor::Service* serv
 #endif
 
 static void test_echo_server() {
-	ESocketAcceptor sa;
 	EBlacklistFilter blf;
 	EWhitelistFilter wlf;
 	blf.block("localhost");
-//	sa.getFilterChainBuilder()->addFirst("black", &blf);
+//	g_sa.getFilterChainBuilder()->addFirst("black", &blf);
 	wlf.allow("localhost");
-//	sa.getFilterChainBuilder()->addFirst("white", &wlf);
+//	g_sa.getFilterChainBuilder()->addFirst("white", &wlf);
 	EHttpCodecFilter hcf;
 #if USE_HTTP_FILTER
-	sa.getFilterChainBuilder()->addLast("http", &hcf);
+	g_sa.getFilterChainBuilder()->addLast("http", &hcf);
 #endif
-	sa.setListeningHandler(onListening);
-	sa.setConnectionHandler(onConnection);
+	g_sa.setListeningHandler(onListening);
+	g_sa.setConnectionHandler(onConnection);
 //	sa.setMaxConnections(10);
-	sa.setSoTimeout(3000);
-	sa.setSessionIdleTime(EIdleStatus::WRITER_IDLE, 30);
-	sa.bind("0.0.0.0", 8887, false, "serviceA");
-	sa.bind("localhost", 8889, true, "serviceB");
+	g_sa.setSoTimeout(30000);
+	g_sa.setSessionIdleTime(EIdleStatus::WRITER_IDLE, 30);
+	g_sa.bind("0.0.0.0", 8887, false, "serviceA");
+//	g_sa.bind("localhost", 8889, true, "serviceB");
 #if USE_SSL
-	sa.setSSLParameters(null,
+	g_sa.setSSLParameters(null,
 			SSL_FILE_PATH "../test/certs/tests-cert.pem",
 			SSL_FILE_PATH "../test/certs/tests-key.pem",
 			null, null);
 #endif
-	sa.listen();
+	g_sa.listen();
 }
 
 static void test_test(int argc, const char** argv) {
 	test_echo_server();
+}
+
+static void sigfunc(int sig_no) {
+	/**
+	 * signal handler is running in main thread!!!
+	 */
+	LOG("signaled.");
+	g_sa.shutdown();
 }
 
 MAIN_IMPL(testnaf) {
@@ -169,6 +178,8 @@ MAIN_IMPL(testnaf) {
 
 	ESystem::init(argc, argv);
 	ELoggerManager::init("log4e.conf");
+
+	signal(SIGINT, sigfunc);
 
 	printf("inited.\n");
 
@@ -179,7 +190,7 @@ MAIN_IMPL(testnaf) {
 			test_test(argc, argv);
 
 //		} while (++i < 5);
-		} while (1);
+		} while (0);
 	}
 	catch (EException& e) {
 		e.printStackTrace();

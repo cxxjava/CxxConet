@@ -148,7 +148,7 @@ public:
 	/**
 	 *
 	 */
-	virtual EStringBase toString();
+	virtual EString toString();
 
 private:
 	ECopyOnWriteArrayList<EIoFilterChain::Entry> entries;

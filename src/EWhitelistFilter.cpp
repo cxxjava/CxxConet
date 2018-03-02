@@ -145,7 +145,7 @@ boolean EWhitelistFilter::isAllowed(EIoSession* session) {
 		EInetAddress* address = remoteAddress->getAddress();
 
 		// check all subnets
-		sp<EConcurrentIterator<ESubnet> > iter = whitelist.iterator();
+		sp<EIterator<sp<ESubnet> > > iter = whitelist.iterator();
 		while (iter->hasNext()) {
 			sp<ESubnet> subnet = iter->next();
 			if (subnet->inSubnet(address)) {

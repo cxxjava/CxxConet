@@ -214,7 +214,7 @@ public:
 	/**
 	 *
 	 */
-	virtual EStringBase toString();
+	virtual EString toString();
 
 private:
 	class EntryImpl;

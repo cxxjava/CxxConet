@@ -25,12 +25,20 @@ class EManagedSession;
 
 class ESocketAcceptor: virtual public EIoService {
 public:
+	enum Status {
+		INITED,
+		RUNNING,
+		DISPOSING,
+		DISPOSED
+	};
+
 	class Service: public EObject {
 	public:
+		sp<EServerSocket> ss;
 		boolean sslActive;
 		EString serviceName;
 		EInetSocketAddress boundAddress;
-		virtual EStringBase toString() {
+		virtual EString toString() {
 			return boundAddress.toString() + ", ssl=" + sslActive + ", service=" + serviceName;
 		}
 	private:
@@ -157,7 +165,12 @@ public:
 	virtual void listen() THROWS(EIOException);
 
 	/**
-	 * Signal acceptor to stop.
+	 * Only close accept socket for gracefully stop.
+	 */
+	virtual void shutdown();
+
+	/**
+	 * Signal acceptor to stop immediately.
 	 */
 	virtual void dispose();
 
@@ -170,6 +183,8 @@ public:
 private:
 	static sp<ELogger> logger;
 
+	EFiberScheduler scheduler;
+
 	typedef struct SSL {
 		EString dh_file;
 		EString cert_file;
@@ -181,7 +196,7 @@ private:
 
 	EHashSet<Service*> Services_;
 
-	boolean disposing_;// = false;
+	volatile Status status_;;
 	boolean reuseAddress_;// = false;
 	int backlog_;
 	int timeout_;

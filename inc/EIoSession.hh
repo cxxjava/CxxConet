@@ -134,8 +134,8 @@ public:
 	/**
 	 *
 	 */
-	void* attach(void* ob);
-	void* attachment();
+	EObject* attach(EObject* ob);
+	EObject* attachment();
 
 protected:
 	friend class EIoFilterChain;
@@ -154,7 +154,7 @@ protected:
 
 	EIoService* service;
 
-	EAtomicReference<void> attachment_;
+	EAtomicReference<EObject*> attachment_;
 
 	/** The FilterChain created for this session */
 	EIoFilterChain* filterChain;

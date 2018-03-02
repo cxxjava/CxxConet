@@ -92,7 +92,7 @@ boolean ESubnet::inSubnet(EInetAddress* address) {
 	return (int) toSubnet(address) == subnetInt;
 }
 
-EStringBase ESubnet::toString() {
+EString ESubnet::toString() {
 	return subnet.getHostAddress() + "/" + suffix;
 }
 

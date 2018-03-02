@@ -379,8 +379,8 @@ int EIoBuffer::normalizeCapacity(int requestedCapacity) {
 }
 
 
-EStringBase EIoBuffer::toString() {
-	EStringBase buf("IoBuffer");
+EString EIoBuffer::toString() {
+	EString buf("IoBuffer");
 	buf.append("[pos=");
 	buf.append(position());
 	buf.append(" lim=");

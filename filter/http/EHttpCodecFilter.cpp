@@ -91,7 +91,7 @@ sp<EObject> EHttpCodecFilter::messageSend(EIoFilter::NextFilter* nextFilter,
 	return nextFilter->messageSend(session, message);
 }
 
-EStringBase EHttpCodecFilter::toString() {
+EString EHttpCodecFilter::toString() {
 	return "EHttpCodecFilter";
 }
 

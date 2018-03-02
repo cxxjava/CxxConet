@@ -95,7 +95,7 @@ public:
 //				ifc->callPreviousFilterClose(nextEntry, session);
 //			}
 
-			virtual EStringBase toString() {
+			virtual EString toString() {
 				return ei->nextEntry->name;
 			}
 		};
@@ -160,8 +160,8 @@ public:
 		owner->remove(getName());
 	}
 
-	virtual EStringBase toString() {
-		EStringBase sb;
+	virtual EString toString() {
+		EString sb;
 
 		// Add the current filter
 		sb.append("('").append(getName()).append('\'');
@@ -345,8 +345,8 @@ void EIoFilterChain::clear() {
 	}
 }
 
-EStringBase EIoFilterChain::toString() {
-	EStringBase buf("{ ");
+EString EIoFilterChain::toString() {
+	EString buf("{ ");
 
 	boolean empty = true;
 
