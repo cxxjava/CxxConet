@@ -117,6 +117,12 @@ public:
 	virtual ~EIoBuffer();
 
 	/**
+	 * Use external allocted memory and not need to free.
+	 * @see allocateDirect() and wrap() api
+	 */
+	EIoBuffer(void* address, int capacity, int offset=0);
+
+	/**
 	 * Returns the direct or heap buffer which is capable to store the specified
 	 * amount of bytes.
 	 *
@@ -138,7 +144,7 @@ public:
 	 * @param offset The starting point in the byte array
 	 * @return a heap IoBuffer containing the selected part of the byte array
 	 */
-	static EIoBuffer* wrap(void* address, int capacity, int offset=0);
+	static EIoBuffer* wrap(const void* address, int capacity, int offset=0);
 
 	/**
 	 * @see ByteBuffer#duplicate()

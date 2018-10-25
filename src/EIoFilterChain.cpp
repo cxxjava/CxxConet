@@ -50,30 +50,10 @@ public:
 				return ifc->callNextSessionCreated(nextEntry, session);
 			}
 
-//			virtual void sessionOpened(EIoSession* session) {
-//				Entry* nextEntry = ei->nextEntry;
-//				ifc->callNextSessionOpened(nextEntry, session);
-//			}
-
 			virtual void sessionClosed(EIoSession* session) {
 				Entry* nextEntry = ei->nextEntry;
 				ifc->callNextSessionClosed(nextEntry, session);
 			}
-
-//			virtual void sessionIdle(EIoSession* session, EIdleStatus status) {
-//				Entry* nextEntry = ei->nextEntry;
-//				ifc->callNextSessionIdle(nextEntry, session, status);
-//			}
-//
-//			virtual void exceptionCaught(EIoSession* session, sp<EThrowableType>& cause) {
-//				Entry* nextEntry = ei->nextEntry;
-//				ifc->callNextExceptionCaught(nextEntry, session, cause);
-//			}
-//
-//			virtual void inputClosed(EIoSession* session) {
-//				Entry* nextEntry = ei->nextEntry;
-//				ifc->callNextInputClosed(nextEntry, session);
-//			}
 
 			virtual sp<EObject> messageReceived(EIoSession* session, sp<EObject> message) {
 				Entry* nextEntry = ei->nextEntry;
@@ -84,16 +64,6 @@ public:
 				Entry* nextEntry = ei->nextEntry;
 				return ifc->callNextMessageSend(nextEntry, session, message);
 			}
-
-//			virtual void filterWrite(EIoSession* session, sp<EWriteRequest>& writeRequest) {
-//				Entry* nextEntry = ei->prevEntry;
-//				ifc->callPreviousFilterWrite(nextEntry, session, writeRequest);
-//			}
-//
-//			virtual void filterClose(EIoSession* session) {
-//				Entry* nextEntry = ei->prevEntry;
-//				ifc->callPreviousFilterClose(nextEntry, session);
-//			}
 
 			virtual EString toString() {
 				return ei->nextEntry->name;
@@ -143,15 +113,6 @@ public:
 	void addAfter(const char* name, EIoFilter* filter) {
 		owner->addAfter(getName(), name, filter);
 	}
-
-	/**
-	 * Replace the filter of this entry with the specified new filter.
-	 *
-	 * @param newFilter The new filter that will be put in the chain
-	 */
-//	void replace(EIoFilter* newFilter) {
-//
-//	}
 
 	/**
 	 * Removes this entry from the chain it belongs to.
@@ -390,38 +351,9 @@ void EIoFilterChain::checkAddable(const char* name) {
 void EIoFilterChain::register_(EntryImpl* prevEntry, const char* name, EIoFilter* filter) {
 	EntryImpl* newEntry = new EntryImpl(prevEntry, prevEntry->nextEntry, name, filter, this);
 
-//	try {
-//		filter->onPreAdd(this, name, newEntry->getNextFilter());
-//	} catch (EException& e) {
-//		delete newEntry; //!
-//
-//		EString msg("onPreAdd(): ");
-//		msg += name;
-//		msg += ":";
-//		msg += filter->toString();
-//		msg += " in ";
-//		msg += getSession()->toString();
-//		throw EIoFilterLifeCycleException(__FILE__, __LINE__, msg.c_str());
-//	}
-
 	prevEntry->nextEntry->prevEntry = newEntry;
 	prevEntry->nextEntry = newEntry;
 	delete name2entry->put(new EString(name), newEntry);
-
-//	try {
-//		filter->onPostAdd(this, name, newEntry->getNextFilter());
-//	} catch (EException& e) {
-//		deregister0(newEntry);
-//		delete newEntry; //!
-//
-//		EString msg("onPostAdd(): ");
-//		msg += name;
-//		msg += ":";
-//		msg += filter->toString();
-//		msg += " in ";
-//		msg += getSession()->toString();
-//		throw EIoFilterLifeCycleException(__FILE__, __LINE__, msg.c_str());
-//	}
 }
 
 void EIoFilterChain::deregister(EntryImpl* entry) {

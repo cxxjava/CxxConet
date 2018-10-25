@@ -11,6 +11,8 @@
 
 namespace efc {
 namespace naf {
+namespace filter {
+namespace http {
 
 static const char* SESSION_CACHE_DATA = "session_cache_data";
 
@@ -95,5 +97,7 @@ EString EHttpCodecFilter::toString() {
 	return "EHttpCodecFilter";
 }
 
+} /* namespace http */
+} /* namespace filter */
 } /* namespace naf */
 } /* namespace efc */

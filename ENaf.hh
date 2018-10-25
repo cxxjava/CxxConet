@@ -8,7 +8,7 @@
 #ifndef __ENAF_HH__
 #define __ENAF_HH__
 
-#define ENAF_VERSION "0.3.0"
+#define ENAF_VERSION "0.4.0"
 
 #include "Efc.hh"
 
@@ -25,11 +25,6 @@
 #include "./inc/ESocketAcceptor.hh"
 #include "./inc/EBlacklistFilter.hh"
 #include "./inc/EWhitelistFilter.hh"
-
-//filter
-#include "./filter/http/EHttpCodecFilter.hh"
-#include "./filter/http/EHttpRequest.hh"
-#include "./filter/http/EHttpResponse.hh"
 
 using namespace efc::naf;
 

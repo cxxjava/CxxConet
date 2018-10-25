@@ -13,6 +13,8 @@
 
 namespace efc {
 namespace naf {
+namespace filter {
+namespace http {
 
 class EHttpCodecFilter: public EIoFilterAdapter {
 public:
@@ -45,6 +47,8 @@ public:
 	virtual EString toString();
 };
 
+} /* namespace http */
+} /* namespace filter */
 } /* namespace naf */
 } /* namespace efc */
 #endif /* EHTTPCODECFILTER_HH_ */

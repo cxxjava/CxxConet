@@ -3,7 +3,7 @@
 
 #define LOG(fmt,...) //ESystem::out->println(fmt, ##__VA_ARGS__)
 
-static void onConnection(ESocketSession* session, ESocketAcceptor::Service* service) {
+static void onConnection(sp<ESocketSession>& session, ESocketAcceptor::Service* service) {
 	LOG("onConnection: service=%s", service->toString().c_str());
 
 	sp<EIoBuffer> request;

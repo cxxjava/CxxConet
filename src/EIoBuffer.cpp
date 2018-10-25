@@ -11,13 +11,18 @@ namespace efc {
 namespace naf {
 
 EIoBuffer::~EIoBuffer() {
-	if (derived_) {
-		delete buf_;
-	}
+	delete buf_;
+}
+
+EIoBuffer::EIoBuffer(void* address, int capacity, int offset) :
+		derived_(false), autoExpand_(false), autoShrink_(false), recapacityAllowed_(
+				false) {
+	buf_ = EIOByteBuffer::wrap(address, capacity, offset);
+	minimumCapacity_ = capacity;
 }
 
 EIoBuffer::EIoBuffer(int capacity) :
-		derived_(true), autoExpand_(false), autoShrink_(false), recapacityAllowed_(
+		derived_(false), autoExpand_(false), autoShrink_(false), recapacityAllowed_(
 				true) {
 	buf_ = EIOByteBuffer::allocate(capacity);
 	minimumCapacity_ = capacity;
@@ -34,7 +39,7 @@ EIoBuffer* EIoBuffer::allocate(int capacity) {
 	return new EIoBuffer(capacity);
 }
 
-EIoBuffer* EIoBuffer::wrap(void* address, int capacity, int offset) {
+EIoBuffer* EIoBuffer::wrap(const void* address, int capacity, int offset) {
 	EIOByteBuffer* buf = EIOByteBuffer::wrap(address, capacity, offset);
 	return new EIoBuffer(buf, capacity);
 }
@@ -144,7 +149,7 @@ int EIoBuffer::compareTo(EIoBuffer* that) {
 
 EIoBuffer* EIoBuffer::autoExpand(int expectedRemaining) {
 	if (isAutoExpand()) {
-		expand(expectedRemaining, true);
+		expand(position(), expectedRemaining, true);
 	}
 	return this;
 }

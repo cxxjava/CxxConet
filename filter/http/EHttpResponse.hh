@@ -12,13 +12,15 @@
 
 namespace efc {
 namespace naf {
+namespace filter {
+namespace http {
 
 class EHttpResponse: public EObject {
 public:
 	EHttpResponse(void* body, int size, const char* head=NULL) {
 		m_BodyLen = size;
 		if (!head) {
-			m_HttpData.appendFormat("HTTP/1.1 200 OK\r\nContent-Length: %d\r\n\r\n", size);
+			m_HttpData.appendFormat("HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: %d\r\n\r\n", size);
 		} else {
 			m_HttpData.append(head);
 		}
@@ -28,7 +30,7 @@ public:
 	EHttpResponse(EString body, const char* head=NULL) {
 		m_BodyLen = body.length();
 		if (!head) {
-			m_HttpData.appendFormat("HTTP/1.1 200 OK\r\nContent-Length: %d\r\n\r\n", m_BodyLen);
+			m_HttpData.appendFormat("HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: %d\r\n\r\n", m_BodyLen);
 		} else {
 			m_HttpData.append(head);
 		}
@@ -59,6 +61,8 @@ private:
 	int m_BodyLen;
 };
 
+} /* namespace http */
+} /* namespace filter */
 } /* namespace naf */
 } /* namespace efc */
 #endif /* EHTTPRESPONSE_HH_ */

@@ -19,9 +19,9 @@ ifeq ($(KERNEL),Darwin)
 endif
 
 ifeq ($(RC),$(BIT32))
-	SHAREDLIB = -lefc32 -leso32 -lrt -lm -ldl -lpthread -lcrypto -lssl
+	SHAREDLIB = -lefc32 -leso32 -lrt -lm -ldl -lpthread -lssl -lcrypto -lnghttp2
 else
-	SHAREDLIB = -lefc64 -leso64 -liconv -ldl -lpthread -lcrypto -lssl
+	SHAREDLIB = -lefc64 -leso64 -liconv -ldl -lpthread -lssl -lcrypto -lnghttp2
 endif
 
 ifeq ($(VERTYPE), RELEASE)
@@ -29,11 +29,13 @@ CCOMPILEOPTION = -c -g -O2 -D__MAIN__
 CPPCOMPILEOPTION = -std=$(CPPSTD) -c -g -O2 -fpermissive -D__MAIN__
 TESTNAF = testnaf
 BENCHMARK = benchmark
+HTTPSERVER = httpserver
 else
 CCOMPILEOPTION = -c -g -D__MAIN__
 CPPCOMPILEOPTION = -std=$(CPPSTD) -c -g -fpermissive -DDEBUG -D__MAIN__
 TESTNAF = testnaf_d
 BENCHMARK = benchmark_d
+HTTPSERVER = httpserver_d
 endif
 
 CCOMPILE = gcc
@@ -53,23 +55,29 @@ INCLUDEDIR = \
 	-I../inc \
 	-I../ \
 	-I/usr/local/Cellar/openssl/1.0.2g/include \
+	-I/usr/local/openssl/include \
 
 LINK = g++
 LINKOPTION = -std=$(CPPSTD) -g
-LIBDIRS = -L../../efc/lib/$(LIBDIR) -L../../CxxJDK/lib/$(LIBDIR)
+LIBDIRS = -L../../efc/lib/$(LIBDIR) -L../../CxxJDK/lib/$(LIBDIR) -L/usr/local/openssl/lib/
 APPENDLIB = 
 
-BASE_SRC += $(sort $(wildcard ../src/*.cpp ../filter/http/*.cpp))
+BASE_SRC += $(sort $(wildcard ../src/*.cpp ../filter/http/*.cpp ../http_parser/*.c ../http/source/*.cc ../http/source/http1/*.cc ../http/source/http2/*.cc))
 BASE_SRC += $(sort $(wildcard ../../eco/src/*.cpp ../../eco/src/*.c  ../../CxxFiber/src/*.cpp ../../CxxFiber/src/*.c))
 BASE_SRC += $(sort $(wildcard ../../elog/src/*.cpp ./../CxxLog4j/src/*.cpp))
-BASE_OBJS   += $(patsubst %.cpp,%.o, $(patsubst %.c,%.o, $(BASE_SRC)))
+BASE_OBJS   += $(patsubst %.cc,%.o, $(patsubst %.cpp,%.o, $(patsubst %.c,%.o, $(BASE_SRC))))
 
-TESTNAF_OBJS = testnaf.o http_parser.o \
+TESTNAF_OBJS = testnaf.o \
 
 BENCHMARK_OBJS = benchmark.o \
 
+HTTPSERVER_OBJS = httpserver.o \
+
 $(TESTNAF): $(BASE_OBJS) $(TESTNAF_OBJS) $(APPENDLIB)
 	$(LINK) $(LINKOPTION) -o $(TESTNAF) $(LIBDIRS) $(BASE_OBJS) $(TESTNAF_OBJS) $(SHAREDLIB) $(APPENDLIB)
+
+$(HTTPSERVER): $(BASE_OBJS) $(HTTPSERVER_OBJS) $(APPENDLIB)
+	$(LINK) $(LINKOPTION) -o $(HTTPSERVER) $(LIBDIRS) $(BASE_OBJS) $(HTTPSERVER_OBJS) $(SHAREDLIB) $(APPENDLIB)
 
 $(BENCHMARK): $(BASE_OBJS) $(BENCHMARK_OBJS) $(APPENDLIB)
 	$(LINK) $(LINKOPTION) -o $(BENCHMARK) $(LIBDIRS) $(BASE_OBJS) $(BENCHMARK_OBJS) $(SHAREDLIB) $(APPENDLIB)
@@ -78,12 +86,15 @@ clean:
 	rm -f $(BASE_OBJS) $(TESTNAF_OBJS) $(BENCHMARK)
 
 all: clean $(TESTNAF) $(BENCHMARK) clean
-.PRECIOUS:%.cpp %.c
+.PRECIOUS:%.cpp %.c %.cc
 .SUFFIXES:
-.SUFFIXES:  .c .o .cpp
+.SUFFIXES:  .c .o .cpp .cc
 
 .cpp.o:
 	$(CPPCOMPILE) -c -o $*.o $(CPPCOMPILEOPTION) $(INCLUDEDIR)  $*.cpp
 
 .c.o:
 	$(CCOMPILE) -c -o $*.o $(CCOMPILEOPTION) $(INCLUDEDIR) $*.c
+
+.cc.o:
+	$(CPPCOMPILE) -c -o $*.o $(CPPCOMPILEOPTION) $(INCLUDEDIR) $*.cc

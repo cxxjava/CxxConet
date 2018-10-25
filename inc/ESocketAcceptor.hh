@@ -43,8 +43,21 @@ public:
 		}
 	private:
 		friend class ESocketAcceptor;
-		Service(const char* name, boolean ssl, const char* hostname, int port): sslActive(ssl), serviceName(name), boundAddress(hostname, port) {}
-		Service(const char* name, boolean ssl, EInetSocketAddress* localAddress): sslActive(ssl), serviceName(name), boundAddress(*localAddress) {}
+		Service(const char* name, boolean ssl, const char* hostname, int port) :
+				sslActive(ssl), serviceName(name), boundAddress(hostname, port) {
+			createSocket();
+		}
+		Service(const char* name, boolean ssl, EInetSocketAddress* localAddress) :
+				sslActive(ssl), serviceName(name), boundAddress(*localAddress) {
+			createSocket();
+		}
+		inline void createSocket() {
+			if (sslActive) {
+				ss = new ESSLServerSocket();
+			} else {
+				ss = new EServerSocket();
+			}
+		}
 	};
 
 public:
@@ -53,11 +66,9 @@ public:
 	ESocketAcceptor();
 
 	/**
-	 * SSL support.
+	 *
 	 */
-	void setSSLParameters(const char* dh_file, const char* cert_file,
-			const char* private_key_file, const char* passwd,
-			const char* CAfile);
+	EFiberScheduler& getFiberScheduler();
 
 	/**
 	 * @see ServerSocket#getReuseAddress()
@@ -148,16 +159,16 @@ public:
 	/**
 	 *
 	 */
-	virtual void setConnectionHandler(std::function<void(ESocketSession* session, Service* service)> handler);
+	virtual void setConnectionHandler(std::function<void(sp<ESocketSession>& session, Service* service)> handler);
 
 	/**
 	 * Binds the <code>ServerSocket</code> to a specific address
      * (IP address and port number).
 	 */
-	virtual void bind(int port, boolean ssl=false, const char* name=null) THROWS(EIOException);
-	virtual void bind(const char* hostname, int port, boolean ssl=false, const char* name=null) THROWS(EIOException);
-	virtual void bind(EInetSocketAddress *localAddress, boolean ssl=false, const char* name=null) THROWS(EIOException);
-	virtual void bind(EIterable<EInetSocketAddress*> *localAddresses, boolean ssl=false, const char* name=null) THROWS(EIOException);
+	virtual void bind(int port, boolean ssl=false, const char* name=null, std::function<void(Service& service)> listener=null) THROWS(EIOException);
+	virtual void bind(const char* hostname, int port, boolean ssl=false, const char* name=null, std::function<void(Service& service)> listener=null) THROWS(EIOException);
+	virtual void bind(EInetSocketAddress *localAddress, boolean ssl=false, const char* name=null, std::function<void(Service& service)> listener=null) THROWS(EIOException);
+	virtual void bind(EIterable<EInetSocketAddress*> *localAddresses, boolean ssl=false, const char* name=null, std::function<void(Service& service)> listener=null) THROWS(EIOException);
 
 	/**
 	 * Listens for connections and loop run for network io events.
@@ -180,19 +191,15 @@ public:
 	 */
 	virtual boolean isDisposed();
 
-private:
+	/**
+	 *
+	 */
+	virtual sp<ESocketSession> newSession(EIoService *service, sp<ESocket>& socket);
+
+protected:
 	static sp<ELogger> logger;
 
 	EFiberScheduler scheduler;
-
-	typedef struct SSL {
-		EString dh_file;
-		EString cert_file;
-		EString private_key_file;
-		EString passwd;
-		EString CAfile;
-	} SSL;
-	sp<SSL> ssl_;
 
 	EHashSet<Service*> Services_;
 
@@ -214,11 +221,15 @@ private:
 	EIoServiceStatistics stats_;
 
 	std::function<void(ESocketAcceptor* acceptor)> listeningCallback_;
-	std::function<void(ESocketSession* session, Service* service)> connectionCallback_;
+	std::function<void(sp<ESocketSession>& session, Service* service)> connectionCallback_;
 
 	void startAccept(EFiberScheduler& scheduler, Service* service) THROWS(EIOException);
 	void startClean(EFiberScheduler& scheduler, int tag) THROWS(EIOException);
 	void startStatistics(EFiberScheduler& scheduler);
+	void signalAccept();
+
+	virtual void onListeningHandle();
+	virtual void onConnectionHandle(sp<ESocketSession>& session, Service* service);
 };
 
 } /* namespace naf */

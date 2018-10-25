@@ -16,13 +16,17 @@ ESocketSession::~ESocketSession() {
 
 ESocketSession::ESocketSession(EIoService* service, sp<ESocket>& socket):
 		EIoSession(service),
-		socket_(socket), closed_(false) {
+		socket_(socket), closed_(false),
+		ioBufferLimit(ES_MAX(socket_->getReceiveBufferSize(), 512)) {
+}
+
+void ESocketSession::init() {
+	//
 }
 
 sp<EObject> ESocketSession::read() {
 	if (ioBuffer == null) {
-		ioBuffer = EIoBuffer::allocate(ES_MAX(socket_->getReceiveBufferSize(), 512));
-		ioBuffer->setAutoExpand(true);
+		ioBuffer = EIoBuffer::allocate(ioBufferLimit);
 	}
 
 	EInputStream* is = socket_->getInputStream();

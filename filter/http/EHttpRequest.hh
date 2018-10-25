@@ -12,6 +12,8 @@
 
 namespace efc {
 namespace naf {
+namespace filter {
+namespace http {
 
 class EHttpRequest: public EObject {
 public:
@@ -44,6 +46,8 @@ private:
 	int m_BodyLen;
 };
 
+} /* namespace http */
+} /* namespace filter */
 } /* namespace naf */
 } /* namespace efc */
 #endif /* EHTTPREQUEST_HH_ */

@@ -1,11 +1,16 @@
 #include "es_main.h"
 #include "ENaf.hh"
-#include "./http_parser.h"
-#include "./http_parser.c"
+
+#include "http_parser/http_parser.h"
+
+#include "../filter/http/EHttpCodecFilter.hh"
+#include "../filter/http/EHttpRequest.hh"
+#include "../filter/http/EHttpResponse.hh"
+
+using namespace filter::http;
 
 #define LOG(fmt,...) ESystem::out->printfln(fmt, ##__VA_ARGS__)
 
-#define USE_SSL 1
 #define SSL_FILE_PATH ""
 
 #define USE_HTTP_FILTER 1
@@ -44,7 +49,7 @@ static void onListening(ESocketAcceptor* acceptor) {
 }
 
 #if USE_HTTP_FILTER
-static void onConnection(ESocketSession* session, ESocketAcceptor::Service* service) {
+static void onConnection(sp<ESocketSession>& session, ESocketAcceptor::Service* service) {
 	LOG("onConnection: service=%s", service->toString().c_str());
 
 //	sleep(10);
@@ -99,7 +104,7 @@ static http_parser_settings settings = {
 	.on_body = on_body
 };
 
-static void onConnection(ESocketSession* session, ESocketAcceptor::Service* service) {
+static void onConnection(sp<ESocketSession>& session, ESocketAcceptor::Service* service) {
 	LOG("onConnection...");
 
 	struct http_parser parser;
@@ -121,7 +126,7 @@ static void onConnection(ESocketSession* session, ESocketAcceptor::Service* serv
 			break;
 		}
 
-		parser.data = session;
+		parser.data = session.get();
 
 		size_t parsed = http_parser_execute(&parser, &settings, (const char *)request->current(), request->limit());
 		if (parsed != request->limit()) {
@@ -141,8 +146,8 @@ static void test_echo_server() {
 //	g_sa.getFilterChainBuilder()->addFirst("black", &blf);
 	wlf.allow("localhost");
 //	g_sa.getFilterChainBuilder()->addFirst("white", &wlf);
-	EHttpCodecFilter hcf;
 #if USE_HTTP_FILTER
+	EHttpCodecFilter hcf;
 	g_sa.getFilterChainBuilder()->addLast("http", &hcf);
 #endif
 	g_sa.setListeningHandler(onListening);
@@ -151,13 +156,17 @@ static void test_echo_server() {
 	g_sa.setSoTimeout(30000);
 	g_sa.setSessionIdleTime(EIdleStatus::WRITER_IDLE, 30);
 	g_sa.bind("0.0.0.0", 8887, false, "serviceA");
-//	g_sa.bind("localhost", 8889, true, "serviceB");
-#if USE_SSL
-	g_sa.setSSLParameters(null,
-			SSL_FILE_PATH "../test/certs/tests-cert.pem",
-			SSL_FILE_PATH "../test/certs/tests-key.pem",
-			null, null);
-#endif
+	g_sa.bind("localhost", 8889, true, "serviceB", [](ESocketAcceptor::Service& service){
+		LOG("service [%s] is active.", service.toString().c_str());
+
+		if (service.sslActive) {
+			sp<ESSLServerSocket> sss = dynamic_pointer_cast<ESSLServerSocket>(service.ss);
+			sss->setSSLParameters(
+						"./certs/tests-cert.pem",
+						"./certs/tests-key.pem",
+						null);
+		}
+	});
 	g_sa.listen();
 }
 

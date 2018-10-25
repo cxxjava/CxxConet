@@ -16,7 +16,7 @@
 namespace efc {
 namespace naf {
 
-class ESocketSession: public EIoSession {
+class ESocketSession: public EIoSession, public enable_shared_from_this<ESocketSession> {
 public:
 	virtual ~ESocketSession();
 
@@ -25,10 +25,11 @@ public:
 	 * Creates a new instance of ESocketSession.
 	 *
 	 * @param service the associated IoService
-	 * @param processor the associated IoProcessor
-	 * @param ch the used channel
+	 * @param socket the associated socket
 	 */
 	ESocketSession(EIoService* service, sp<ESocket>& socket);
+
+	virtual void init();
 
 	virtual sp<EObject> read();
 	virtual boolean write(sp<EObject> message);
@@ -59,11 +60,17 @@ public:
 	 */
 	sp<ESocket> getSocket();
 
+	/**
+	 *
+	 */
+	int bufferLimit() { return ioBufferLimit; }
+
 private:
 	sp<ESocket> socket_;
 	boolean closed_;
 
 	sp<EIoBuffer> ioBuffer;
+	uint ioBufferLimit;
 };
 
 //=============================================================================

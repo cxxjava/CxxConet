@@ -31,15 +31,8 @@ ESocketAcceptor::ESocketAcceptor() :
 	managedSessions_ = new EManagedSession(this);
 }
 
-void ESocketAcceptor::setSSLParameters(const char* dh_file, const char* cert_file,
-		const char* private_key_file, const char* passwd,
-		const char* CAfile) {
-	ssl_ = new SSL();
-	ssl_->dh_file = dh_file;
-	ssl_->cert_file = cert_file;
-	ssl_->private_key_file = private_key_file;
-	ssl_->passwd = passwd;
-	ssl_->CAfile = CAfile;
+EFiberScheduler& ESocketAcceptor::getFiberScheduler() {
+	return scheduler;
 }
 
 boolean ESocketAcceptor::isReuseAddress() {
@@ -125,32 +118,40 @@ void ESocketAcceptor::setListeningHandler(std::function<void(ESocketAcceptor* ac
 	listeningCallback_ = handler;
 }
 
-void ESocketAcceptor::setConnectionHandler(std::function<void(ESocketSession* session, Service* service)> handler) {
+void ESocketAcceptor::setConnectionHandler(std::function<void(sp<ESocketSession>& session, Service* service)> handler) {
 	connectionCallback_ = handler;
 }
 
-void ESocketAcceptor::bind(int port, boolean ssl, const char* name) {
-	Services_.add(new Service(name, ssl, "127.0.0.1", port));
+void ESocketAcceptor::bind(int port, boolean ssl, const char* name, std::function<void(Service& service)> listener) {
+	Service* svc = new Service(name, ssl, "127.0.0.1", port);
+	Services_.add(svc);
+	if (listener != null) { listener(*svc); }
 }
 
-void ESocketAcceptor::bind(const char* hostname, int port, boolean ssl, const char* name) {
-	Services_.add(new Service(name, ssl, hostname, port));
+void ESocketAcceptor::bind(const char* hostname, int port, boolean ssl, const char* name, std::function<void(Service& service)> listener) {
+	Service* svc = new Service(name, ssl, hostname, port);
+	Services_.add(svc);
+	if (listener != null) { listener(*svc); }
 }
 
-void ESocketAcceptor::bind(EInetSocketAddress* localAddress, boolean ssl, const char* name) {
+void ESocketAcceptor::bind(EInetSocketAddress* localAddress, boolean ssl, const char* name, std::function<void(Service& service)> listener) {
 	if (!localAddress) {
 		throw ENullPointerException(__FILE__, __LINE__, "localAddress");
 	}
-	Services_.add(new Service(name, ssl, localAddress));
+	Service* svc = new Service(name, ssl, localAddress);
+	Services_.add(svc);
+	if (listener != null) { listener(*svc); }
 }
 
-void ESocketAcceptor::bind(EIterable<EInetSocketAddress*>* localAddresses, boolean ssl, const char* name) {
+void ESocketAcceptor::bind(EIterable<EInetSocketAddress*>* localAddresses, boolean ssl, const char* name, std::function<void(Service& service)> listener) {
 	if (!localAddresses) {
 		throw ENullPointerException(__FILE__, __LINE__, "localAddresses");
 	}
 	sp < EIterator<EInetSocketAddress*> > iter = localAddresses->iterator();
 	while (iter->hasNext()) {
-		Services_.add(new Service(name, ssl, iter->next()));
+		Service* svc = new Service(name, ssl, iter->next());
+		Services_.add(svc);
+		if (listener != null) { listener(*svc); }
 	}
 }
 
@@ -171,9 +172,11 @@ void ESocketAcceptor::listen() {
 
 		status_ = RUNNING;
 
-		// create client socket work-thread's leader fiber for clean idle socket.
-		for (int i=1; i<workThreads_; i++) {
-			this->startClean(scheduler, i);
+		// create clean idle socket fibers for per-conn-thread.
+		if (idleTimeForRead_.value() > 0 || idleTimeForWrite_.value() > 0) {
+			for (int i=1; i<workThreads_; i++) {
+				this->startClean(scheduler, i);
+			}
 		}
 
 		// accept loop
@@ -186,17 +189,26 @@ void ESocketAcceptor::listen() {
 		this->startStatistics(scheduler);
 
 		// on listening callback
-		if (listeningCallback_ != null) {
-			scheduler.schedule([this](){
-				listeningCallback_(this);
-			});
-		}
+		this->onListeningHandle();
 
 		// wait for fibers work done.
 		scheduler.join(EOS::active_processor_count());
-	}
-	catch (EException& e) {
+	} catch (EInterruptedException& e) {
+		logger->info__(__FILE__, __LINE__, "interrupted");
+	} catch (EException& e) {
 		logger->error__(__FILE__, __LINE__, e.toString().c_str());
+	}
+}
+
+void ESocketAcceptor::signalAccept() {
+	sp<EIterator<Service*> > iter = Services_.iterator();
+	while (iter->hasNext()) {
+		Service* sv = iter->next();
+		if (sv->ss != null) {
+			//FIXME: http://bbs.chinaunix.net/forum.php?mod=viewthread&action=printable&tid=1844321
+			//sv->ss->close();
+			ESocket s("127.0.0.1", sv->ss->getLocalPort());
+		}
 	}
 }
 
@@ -208,15 +220,7 @@ void ESocketAcceptor::dispose() {
 	scheduler.interrupt();
 
 	// accept notify
-	sp<EIterator<Service*> > iter = Services_.iterator();
-	while (iter->hasNext()) {
-		Service* sv = iter->next();
-		if (sv->ss != null) {
-			//FIXME: http://bbs.chinaunix.net/forum.php?mod=viewthread&action=printable&tid=1844321
-			//sv->ss->close();
-			ESocket s("127.0.0.1", sv->ss->getLocalPort());
-		}
-	}
+	signalAccept();
 }
 
 void ESocketAcceptor::shutdown() {
@@ -224,19 +228,11 @@ void ESocketAcceptor::shutdown() {
 	status_ = DISPOSING;
 
 	// accept notify
-	sp<EIterator<Service*> > iter = Services_.iterator();
-	while (iter->hasNext()) {
-		Service* sv = iter->next();
-		if (sv->ss != null) {
-			//FIXME: http://bbs.chinaunix.net/forum.php?mod=viewthread&action=printable&tid=1844321
-			//sv->ss->close();
-			ESocket s("127.0.0.1", sv->ss->getLocalPort());
-		}
-	}
+	signalAccept();
 }
 
 boolean ESocketAcceptor::isDisposed() {
-	return status_ == DISPOSED;
+	return status_ >= DISPOSING;
 }
 
 //=============================================================================
@@ -244,21 +240,7 @@ boolean ESocketAcceptor::isDisposed() {
 void ESocketAcceptor::startAccept(EFiberScheduler& scheduler, Service* service) {
 	EInetSocketAddress& socketAddress = service->boundAddress;
 
-	sp<EFiber> acceptFiber = scheduler.schedule([&,service,this](){
-		if (ssl_ != null && service->sslActive) {
-			ESSLServerSocket* sss = new ESSLServerSocket();
-			boolean r = sss->setSSLParameters(ssl_->dh_file.c_str(),
-						ssl_->cert_file.c_str(),
-						ssl_->private_key_file.c_str(),
-						ssl_->passwd.c_str(),
-						ssl_->CAfile.c_str());
-			if (!r) {
-				throw EIOException(__FILE__, __LINE__, "SSL error.");
-			}
-			service->ss = sss;
-		} else {
-			service->ss = new EServerSocket();
-		}
+	sp<EFiber> acceptFiber = new EFiberTarget([&,service,this](){
 		service->ss->setReuseAddress(reuseAddress_);
 		if (timeout_ > 0) {
 			service->ss->setSoTimeout(timeout_);
@@ -274,11 +256,12 @@ void ESocketAcceptor::startAccept(EFiberScheduler& scheduler, Service* service) 
 				sp<ESocket> socket = service->ss->accept();
 				if (socket != null) {
 					try {
-						sp<ESocketSession> session(new ESocketSession(this, socket));
+						sp<ESocketSession> session = newSession(this, socket);
+						session->init(); // enable shared from this.
 
 						// reach the max connections.
 						int maxconns = maxConns_.value();
-						if ((status_ >= DISPOSING) || (maxconns > 0 && connections_.value() >= maxconns)) {
+						if (isDisposed() || (maxconns > 0 && connections_.value() >= maxconns)) {
 							socket->close();
 							EThread::yield(); //?
 							continue;
@@ -300,28 +283,28 @@ void ESocketAcceptor::startAccept(EFiberScheduler& scheduler, Service* service) 
 								session->close();
 							);
 
-							// add to session manager.
-							managedSessions_->addSession(session->getSocket()->getFD(), session.get());
+							try {
+								// add to session manager.
+								managedSessions_->addSession(session->getSocket()->getFD(), session.get());
 
-							// set so_timeout option.
-							if (timeout_ > 0) {
-								session->getSocket()->setSoTimeout(timeout_);
-							}
-
-							// on session create.
-							boolean created = session->getFilterChain()->fireSessionCreated();
-							if (!created) {
-								return;
-							}
-
-							if (connectionCallback_ != null) {
-								try {
-									connectionCallback_(session.get(), service);
-								} catch (EIOException& e) {
-									logger->error__(__FILE__, __LINE__, e.toString().c_str());
-								} catch (...) {
-									logger->error__(__FILE__, __LINE__, "error");
+								// set so_timeout option.
+								if (timeout_ > 0) {
+									session->getSocket()->setSoTimeout(timeout_);
 								}
+
+								// on session create.
+								boolean created = session->getFilterChain()->fireSessionCreated();
+								if (!created) {
+									return;
+								}
+
+								// on connection.
+								sp<ESocketSession> noconstss = session;
+								this->onConnectionHandle(noconstss, service);
+							} catch (EThrowable& t) {
+								logger->error__(__FILE__, __LINE__, t.toString().c_str());
+							} catch (...) {
+								logger->error__(__FILE__, __LINE__, "error");
 							}
 						});
 					} catch (EThrowable& t) {
@@ -345,27 +328,32 @@ void ESocketAcceptor::startAccept(EFiberScheduler& scheduler, Service* service) 
 		service->ss->close();
 	});
 	acceptFiber->setTag(0); //tag: 0
+
+	scheduler.schedule(acceptFiber);
 }
 
 void ESocketAcceptor::startClean(EFiberScheduler& scheduler, int tag) {
-	sp<EFiber> leadFiber = scheduler.schedule([&,this](){
+	sp<EFiber> cleanFiber = new EFiberTarget([&,this](){
 		logger->debug__(__FILE__, __LINE__, "I'm clean fiber, thread id=%ld", EThread::currentThread()->getId());
 
 		try {
 			EHashMap<int, EIoSession*>* threadManagedSessions = managedSessions_->getCurrentThreadManagedSessions();
 
-			while (status_ == RUNNING || (status_ == DISPOSING && connections_.value() > 0)) {
+			while (status_ == RUNNING || (connections_.value() > 0)) {
 				int maxsecs = 3; // sleep for 1s-10s second.
 				int idleread = idleTimeForRead_.value();
 				int idlewrite = idleTimeForWrite_.value();
+                int idlesecs = EInteger::MAX_VALUE;
 				int status = 0;
 				if (idleread > 0) {
 					status |= READER_IDLE;
 					maxsecs = ES_MIN(idleread, maxsecs);
+                    idlesecs = ES_MIN(idlesecs, idleread);
 				}
 				if (idlewrite > 0) {
 					status |= WRITER_IDLE;
 					maxsecs = ES_MIN(idlewrite, maxsecs);
+                    idlesecs = ES_MIN(idlesecs, idlewrite);
 				}
 				int seconds = ES_MAX(maxsecs, 1);
 
@@ -384,10 +372,15 @@ void ESocketAcceptor::startClean(EFiberScheduler& scheduler, int tag) {
 						lastIoTime = ES_MIN(session->getLastWriteTime(), lastIoTime);
 					}
 
-					if (currTime - lastIoTime > (maxsecs * 1000)) {
+					if (currTime - lastIoTime > (idlesecs * 1000)) {
 						//shutdown socket by server.
 						session->getSocket()->shutdownInput();
 					}
+				}
+
+				if (status_ == DISPOSED) {
+					logger->info__(__FILE__, __LINE__, "disposed");
+					break; //!
 				}
 			}
 		} catch (EInterruptedException& e) {
@@ -395,17 +388,21 @@ void ESocketAcceptor::startClean(EFiberScheduler& scheduler, int tag) {
 		} catch (EThrowable& t) {
 			logger->error__(__FILE__, __LINE__, t.toString().c_str());
 		}
+
+		logger->info__(__FILE__, __LINE__, "exit clean fiber.");
 	});
-	leadFiber->setTag(tag);  //tag: 1-N
+	cleanFiber->setTag(tag);  //tag: 1-N
+
+	scheduler.schedule(cleanFiber);
 }
 
 void ESocketAcceptor::startStatistics(EFiberScheduler& scheduler) {
-	sp<EFiber> staticsticsFiber = scheduler.schedule([this](){
+	sp<EFiber> statisticsFiber = new EFiberTarget([this](){
 		try {
 			llong currentTime = ESystem::currentTimeMillis();
 			int count = 0;
 
-			while (status_ == RUNNING || (status_ == DISPOSING && connections_.value() > 0)) {
+			while (status_ == RUNNING || (connections_.value() > 0)) {
 				int seconds = this->getStatistics()->getThroughputCalculationInterval();
 
 				sleep(seconds); //!
@@ -418,14 +415,47 @@ void ESocketAcceptor::startStatistics(EFiberScheduler& scheduler) {
 				}
 
 				this->getStatistics()->updateThroughput(currentTime);
+
+				if (status_ == DISPOSED) {
+					logger->info__(__FILE__, __LINE__, "disposed");
+					break; //!
+				}
 			}
 		} catch (EInterruptedException& e) {
 			logger->info__(__FILE__, __LINE__, "interrupted");
 		} catch (EThrowable& t) {
 			logger->error__(__FILE__, __LINE__, t.toString().c_str());
 		}
+
+		logger->info__(__FILE__, __LINE__, "exit statistics fiber.");
 	});
-	staticsticsFiber->setTag(0); //tag: 0
+	statisticsFiber->setTag(0); //tag: 0
+
+	scheduler.schedule(statisticsFiber);
+}
+
+sp<ESocketSession> ESocketAcceptor::newSession(EIoService *service, sp<ESocket>& socket) {
+	return new ESocketSession(this, socket);
+}
+
+void ESocketAcceptor::onListeningHandle() {
+	if (listeningCallback_ != null) {
+		scheduler.schedule([this](){
+			listeningCallback_(this);
+		});
+	}
+}
+
+void ESocketAcceptor::onConnectionHandle(sp<ESocketSession>& session, Service* service) {
+	if (connectionCallback_ != null) {
+		try {
+			connectionCallback_(session, service);
+		} catch (EIOException& e) {
+			logger->error__(__FILE__, __LINE__, e.toString().c_str());
+		} catch (...) {
+			logger->error__(__FILE__, __LINE__, "error");
+		}
+	}
 }
 
 } /* namespace naf */

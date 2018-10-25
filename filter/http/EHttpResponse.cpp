@@ -9,6 +9,10 @@
 
 namespace efc {
 namespace naf {
+namespace filter {
+namespace http {
 
+} /* namespace http */
+} /* namespace filter */
 } /* namespace naf */
 } /* namespace efc */
